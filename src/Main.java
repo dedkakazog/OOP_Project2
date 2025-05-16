@@ -15,7 +15,9 @@ public class Main {
 
     private static final String MSG_UNKNOWN_COMM = "Unknown command. Type help to see available commands.";
     private static final String MSG_EXIT = "Bye!";
-    private static final String MSG_NOTE_ADDED = "Note %s created successfully with links to %d notes.";
+
+    //composed strings
+    private static final String MSG_NOTE_ADDED = "Note %s created successfully with links to %d notes.%n";
 
     public static void main(String[] args) {
         SecondBrainController controller = new SecondBrainController();
@@ -42,13 +44,12 @@ public class Main {
                 case null -> System.out.println(MSG_UNKNOWN_COMM);
             }
 
-
         }while (comm != Command.EXIT);
         in.close();
     }
 
     private static void createNote(Scanner in, SecondBrainController controller){
-        String[] input = in.nextLine().split(" ");
+        String[] input = in.nextLine().trim().split(" ");
         String name = in.nextLine();
         String content = in.nextLine();
         NoteType type = NoteType.toNoteType(input[0]);

@@ -11,6 +11,7 @@ public class SecondBrainController {
 
     private HashMap<String, Note> notes;
     private HashMap<String, HashSet<String>> tags;
+    private LocalDate currentDate;
 
     public SecondBrainController() {
         notes = new HashMap<>();
@@ -19,19 +20,26 @@ public class SecondBrainController {
 
 
     public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, InvalidNoteKindException, InvalidDateException {
-        if (date.isAfter(LocalDate.now())) {
+        if (notes.isEmpty()) {
+            setCurrentDate(date);
+        }
+        if (date.isBefore(currentDate)) {
             throw new InvalidDateException();
         }
         if (notes.containsKey(name)) {
             throw new NoteAlreadyExistsException(name);
-        }        notes.put(name, new PermanentNote(type, date, name, content));
+        }
+        notes.put(name, new PermanentNote(type, date, name, content));
         if (getLinksAmount(content) > 0){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         }
     }
 
     public void addLitNote(NoteType type, LocalDate date, String name, String content, String title, String author, LocalDate publicationDate, String URL, String quote){
-        if (date.isAfter(LocalDate.now())) {
+        if (notes.isEmpty()) {
+            setCurrentDate(date);
+        }
+        if (date.isBefore(currentDate)) {
             throw new InvalidDateException();
         }
         if (notes.containsKey(name)) {
@@ -41,6 +49,11 @@ public class SecondBrainController {
         if (getLinksAmount(content) > 0){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         }
+    }
+
+
+    private void setCurrentDate(LocalDate date) {
+        currentDate = date;
     }
 
 
