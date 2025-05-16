@@ -3,14 +3,17 @@ package model;
 import enums.NoteType;
 import exceptions.*;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.*;
 
 
 public class SecondBrainController {
 
+    private static final String NOTE_DETAILS = "%s: %s %d links. %d tags.";
+
     private HashMap<String, Note> notes;
-    private HashMap<String, HashSet<String>> tags;
+    private HashMap<String, String> tags;
     private LocalDate currentDate;
 
     public SecondBrainController() {
@@ -19,12 +22,12 @@ public class SecondBrainController {
     }
 
 
-    public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, InvalidNoteKindException, InvalidDateException {
+    public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, InvalidNoteKindException, NoTimeTravellingException {
         if (notes.isEmpty()) {
             setCurrentDate(date);
         }
-        if (date.isBefore(currentDate)) {
-            throw new InvalidDateException();
+        if (date != null && date.isBefore(currentDate)) {
+            throw new NoTimeTravellingException();
         }
         if (notes.containsKey(name)) {
             throw new NoteAlreadyExistsException(name);
@@ -35,15 +38,18 @@ public class SecondBrainController {
         }
     }
 
-    public void addLitNote(NoteType type, LocalDate date, String name, String content, String title, String author, LocalDate publicationDate, String URL, String quote){
+    public void addLitNote(NoteType type, LocalDate date, String name, String content, String title, String author, LocalDate publicationDate, String URL, String quote) throws NoteAlreadyExistsException, NoTimeTravellingException, NoTimeTravellingDocumentException {
         if (notes.isEmpty()) {
             setCurrentDate(date);
         }
         if (date.isBefore(currentDate)) {
-            throw new InvalidDateException();
+            throw new NoTimeTravellingException();
         }
         if (notes.containsKey(name)) {
             throw new NoteAlreadyExistsException(name);
+        }
+        if (publicationDate.isAfter(currentDate)) {
+            throw new NoTimeTravellingDocumentException();
         }
         notes.put(name, new LiteraryNote(type, date, name, content, title, author, publicationDate, URL, quote));
         if (getLinksAmount(content) > 0){
@@ -51,6 +57,14 @@ public class SecondBrainController {
         }
     }
 
+    public String getNoteDetails(String name) throws NoteNotFoundException{
+        if (!notes.containsKey(name)){
+            throw new NoteNotFoundException();
+        }
+        Note note = notes.get(name);
+        return String.format(NOTE_DETAILS, name, note.getContent(), 0, 0);
+    }
+    /// ////////////////////////////////////////////////////////////////////////
 
     private void setCurrentDate(LocalDate date) {
         currentDate = date;

@@ -4,6 +4,7 @@ import enums.NoteType;
 import exceptions.*;
 import model.*;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -53,30 +54,49 @@ public class Main {
         String name = in.nextLine();
         String content = in.nextLine();
         NoteType type = NoteType.toNoteType(input[0]);
-        LocalDate date = toLocalDate(input, DATE_ID);
+        LocalDate date;
         try{
-            if(type == NoteType.LITERATURE){
-                String title = in.nextLine();
-                String author = in.nextLine();
-                LocalDate publishDate = toLocalDate(in.nextLine().split(" "), PUBLICATION_DATE_ID);
-                String URL = in.nextLine();
-                String quote = in.nextLine();
+            date = toLocalDate(input, DATE_ID);
+        } catch (DateTimeException e){
+            System.out.println("Invalid date!");
+            return;
+        }
+        if(type == NoteType.LITERATURE){
+            String title = in.nextLine();
+            String author = in.nextLine();
+            String[] publicationDate = in.nextLine().split(" ");
+            String URL = in.nextLine();
+            String quote = in.nextLine();
+            try {
+                LocalDate publishDate = toLocalDate(publicationDate, PUBLICATION_DATE_ID);
                 controller.addLitNote(type, date, name, content, title, author, publishDate, URL, quote);
-            } else{
-                controller.addPermNote(type, date, name, content);
+                System.out.printf(MSG_NOTE_ADDED, name, controller.getLinksAmount(content));
+            } catch (NoteAlreadyExistsException | NoTimeTravellingException | NoTimeTravellingDocumentException e){
+                System.out.println(e.getMessage());
+            }catch (DateTimeException e){
+                System.out.println("Invalid document date!");
             }
-            System.out.printf(MSG_NOTE_ADDED, name, controller.getLinksAmount(content));
-        }catch (InvalidDateException | NoteAlreadyExistsException e) {
-            System.out.println(e.getMessage());
+        } else {
+            try {
+                controller.addPermNote(type, date, name, content);
+            } catch (NoteAlreadyExistsException | InvalidNoteKindException | NoTimeTravellingException e){
+                System.out.println(e.getMessage());
+            }
         }
     }
 
-    private static LocalDate toLocalDate(String[] input, int lineStart) {
+    private static LocalDate toLocalDate(String[] input, int lineStart){
         return LocalDate.of(Integer.parseInt(input[lineStart]), Integer.parseInt(input[lineStart + 1]), Integer.parseInt(input[lineStart + 2]));
     }
 
     private static void printNote(Scanner in, SecondBrainController controller){
-
+        String name = in.nextLine().trim();
+        try {
+            String details = controller.getNoteDetails(name);
+            System.out.println(details);
+        } catch (NoteNotFoundException e){
+            System.out.printf(e.getMessage(), name);
+        }
     }
 
     private static void updateNote(Scanner in, SecondBrainController controller){

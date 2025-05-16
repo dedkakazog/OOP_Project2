@@ -17,4 +17,17 @@ public abstract class Note {
         this.name = name;
         this.content = content;
     }
+
+    public NoteType getType() {
+        return type;
+    }
+    public LocalDate getDate() {
+        return date;
+    }
+    public String getName() {
+        return name;
+    }
+    public String getContent() {
+        return content;
+    }
 }

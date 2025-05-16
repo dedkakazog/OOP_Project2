@@ -1,7 +1,7 @@
 package exceptions;
 
 public class NoTimeTravellingException extends RuntimeException {
-    public NoTimeTravellingException(String message) {
-        super(message);
+    public NoTimeTravellingException() {
+        super("No time travelling!");
     }
 }
