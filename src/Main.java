@@ -1,24 +1,27 @@
 import enums.Command;
-import enums.Messages;
 import enums.NoteType;
 import exceptions.*;
 import model.*;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Scanner;
 
 public class Main {
 
-    private static final int DATE_ID = 1;
-    private static final int PUBLICATION_DATE_ID = 0;
+    private static final int CREATION_DATE_INDEX = 1;
+    private static final int DATE_INDEX = 0;
 
     private static final String MSG_UNKNOWN_COMM = "Unknown command. Type help to see available commands.";
     private static final String MSG_EXIT = "Bye!";
+    private static final String MSG_INVALID_DATE = "Invalid date!";
+    private static final String MSG_INVALID_DOC_DATE = "Invalid document date!";
+    private static final String MSG_NO_LINKED_NOTES = "No linked notes.";
 
     //composed strings
     private static final String MSG_NOTE_ADDED = "Note %s created successfully with links to %d notes.%n";
+    private static final String MSG_NOTE_UPDATED = "Note %s updated. It now has %d links.%n";
 
     public static void main(String[] args) {
         SecondBrainController controller = new SecondBrainController();
@@ -56,9 +59,9 @@ public class Main {
         NoteType type = NoteType.toNoteType(input[0]);
         LocalDate date;
         try{
-            date = toLocalDate(input, DATE_ID);
+            date = toLocalDate(input, CREATION_DATE_INDEX);
         } catch (DateTimeException e){
-            System.out.println("Invalid date!");
+            System.out.println(MSG_INVALID_DATE);
             return;
         }
         if(type == NoteType.LITERATURE){
@@ -68,17 +71,18 @@ public class Main {
             String URL = in.nextLine();
             String quote = in.nextLine();
             try {
-                LocalDate publishDate = toLocalDate(publicationDate, PUBLICATION_DATE_ID);
+                LocalDate publishDate = toLocalDate(publicationDate, DATE_INDEX);
                 controller.addLitNote(type, date, name, content, title, author, publishDate, URL, quote);
                 System.out.printf(MSG_NOTE_ADDED, name, controller.getLinksAmount(content));
             } catch (NoteAlreadyExistsException | NoTimeTravellingException | NoTimeTravellingDocumentException e){
                 System.out.println(e.getMessage());
             }catch (DateTimeException e){
-                System.out.println("Invalid document date!");
+                System.out.println(MSG_INVALID_DOC_DATE);
             }
         } else {
             try {
                 controller.addPermNote(type, date, name, content);
+                System.out.printf(MSG_NOTE_ADDED, name, controller.getLinksAmount(content));
             } catch (NoteAlreadyExistsException | InvalidNoteKindException | NoTimeTravellingException e){
                 System.out.println(e.getMessage());
             }
@@ -100,11 +104,35 @@ public class Main {
     }
 
     private static void updateNote(Scanner in, SecondBrainController controller){
-
+        String name = in.nextLine().trim();
+        String[] input = in.nextLine().trim().split(" ");
+        String content = in.nextLine().trim();
+        try {
+            LocalDate date = toLocalDate(input, DATE_INDEX);
+            controller.updateNoteContent(name, content, date);
+            System.out.printf(MSG_NOTE_UPDATED, name, controller.getLinksAmount(content));
+        } catch (DateTimeException e){
+            System.out.println(MSG_INVALID_DATE);
+        } catch (NoteNotFoundException e){
+            System.out.printf(e.getMessage(), name);
+        } catch (NoTimeTravellingException e){
+            System.out.println(e.getMessage());
+        }
     }
 
     private static void listLinks(Scanner in, SecondBrainController controller){
-
+        String name = in.nextLine().trim();
+        try {
+            Iterator<String> it = controller.getLinksIterator(name);
+            if(!it.hasNext()){
+                System.out.println(MSG_NO_LINKED_NOTES);
+            }
+            while(it.hasNext()){
+                System.out.println(it.next());
+            }
+        } catch (NoteNotFoundException e){
+            System.out.printf(e.getMessage(), name);
+        }
     }
 
     private static void addTag(Scanner in, SecondBrainController controller){

@@ -3,31 +3,63 @@ package model;
 import enums.NoteType;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public abstract class Note {
 
     private NoteType type;
-    private LocalDate date;
+    private LocalDate lastUpdate;
     private String name;
     private String content;
+    private ArrayList<String> links;
 
     public Note(NoteType type, LocalDate date, String name, String content) {
         this.type = type;
-        this.date = date;
+        this.lastUpdate = date;
         this.name = name;
         this.content = content;
+        this.links = new ArrayList<>();
     }
 
     public NoteType getType() {
         return type;
     }
-    public LocalDate getDate() {
-        return date;
+    public LocalDate getLastUpdate() {
+        return lastUpdate;
     }
     public String getName() {
         return name;
     }
     public String getContent() {
         return content;
+    }
+
+    public void addLink(String note) {
+        links.add(note);
+    }
+
+    public Iterator<String> getLinks() {
+        return links.iterator();
+    }
+
+    public int getNumLinks() {
+        return links.size();
+    }
+
+    public void updateDate(LocalDate date) {
+        this.lastUpdate = date;
+    }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public boolean linkExists(String link) {
+        return links.contains(link);
+    }
+
+    public void clearLinks() {
+        links.clear();
     }
 }
