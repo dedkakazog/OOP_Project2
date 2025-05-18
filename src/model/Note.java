@@ -4,6 +4,7 @@ import enums.NoteType;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 
 public abstract class Note {
@@ -12,14 +13,14 @@ public abstract class Note {
     private LocalDate lastUpdate;
     private String name;
     private String content;
-    private ArrayList<String> links;
+    private HashSet<String> links;
 
     public Note(NoteType type, LocalDate date, String name, String content) {
         this.type = type;
         this.lastUpdate = date;
         this.name = name;
         this.content = content;
-        this.links = new ArrayList<>();
+        this.links = new HashSet<>();
     }
 
     public NoteType getType() {
@@ -55,9 +56,7 @@ public abstract class Note {
         this.content = content;
     }
 
-    public boolean linkExists(String link) {
-        return links.contains(link);
-    }
+
 
     public void clearLinks() {
         links.clear();

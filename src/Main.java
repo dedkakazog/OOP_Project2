@@ -65,27 +65,35 @@ public class Main {
             return;
         }
         if(type == NoteType.LITERATURE){
-            String title = in.nextLine();
-            String author = in.nextLine();
-            String[] publicationDate = in.nextLine().split(" ");
-            String URL = in.nextLine();
-            String quote = in.nextLine();
-            try {
-                LocalDate publishDate = toLocalDate(publicationDate, DATE_INDEX);
-                controller.addLitNote(type, date, name, content, title, author, publishDate, URL, quote);
-                System.out.printf(MSG_NOTE_ADDED, name, controller.getLinksAmount(content));
-            } catch (NoteAlreadyExistsException | NoTimeTravellingException | NoTimeTravellingDocumentException e){
-                System.out.println(e.getMessage());
-            }catch (DateTimeException e){
-                System.out.println(MSG_INVALID_DOC_DATE);
-            }
+            createLiteratureNote(in, controller, name, content, type, date);
         } else {
-            try {
-                controller.addPermNote(type, date, name, content);
-                System.out.printf(MSG_NOTE_ADDED, name, controller.getLinksAmount(content));
-            } catch (NoteAlreadyExistsException | InvalidNoteKindException | NoTimeTravellingException e){
-                System.out.println(e.getMessage());
-            }
+            createPermanentNote(controller, name, content, type, date);
+        }
+    }
+
+    private static void createLiteratureNote(Scanner in, SecondBrainController controller, String name, String content, NoteType type, LocalDate date){
+        String title = in.nextLine();
+        String author = in.nextLine();
+        String[] publicationDate = in.nextLine().split(" ");
+        String URL = in.nextLine();
+        String quote = in.nextLine();
+        try {
+            LocalDate publishDate = toLocalDate(publicationDate, DATE_INDEX);
+            controller.addLitNote(type, date, name, content, title, author, publishDate, URL, quote);
+            System.out.printf(MSG_NOTE_ADDED, name, controller.getLinksAmount(content));
+        } catch (NoteAlreadyExistsException | NoTimeTravellingException | NoTimeTravellingDocumentException e){
+            System.out.println(e.getMessage());
+        }catch (DateTimeException e){
+            System.out.println(MSG_INVALID_DOC_DATE);
+        }
+    }
+
+    private static void createPermanentNote(SecondBrainController controller, String name, String content, NoteType type, LocalDate date){
+        try {
+            controller.addPermNote(type, date, name, content);
+            System.out.printf(MSG_NOTE_ADDED, name, controller.getLinksAmount(content));
+        } catch (NoteAlreadyExistsException | InvalidNoteKindException | NoTimeTravellingException e){
+            System.out.println(e.getMessage());
         }
     }
 

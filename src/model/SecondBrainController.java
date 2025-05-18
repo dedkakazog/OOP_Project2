@@ -60,13 +60,13 @@ public class SecondBrainController {
             note.clearLinks();
             ArrayList<String> links = getLinks(note.getContent());
             for (int i = 0; i < getLinksAmount(note.getContent()); i++) {
-                if(!note.linkExists(links.get(i))){
-                    note.addLink(links.get(i));
-                }
+                note.addLink(links.get(i));
             }
         }
     }
 
+
+/// ////////////////////////////////////////////////////////////
     public String getNoteDetails(String name) throws NoteNotFoundException{
         if (!notes.containsKey(name)){
             throw new NoteNotFoundException();
@@ -74,7 +74,9 @@ public class SecondBrainController {
         Note note = notes.get(name);
         return String.format(NOTE_DETAILS, name, note.getContent(), note.getNumLinks(), 0);
     }
-    /// ////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
+
 
     private void setCurrentDate(LocalDate date) {
         currentDate = date;
