@@ -2,8 +2,6 @@ package model;
 
 import enums.NoteType;
 
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class ReferenceNote extends Note {
@@ -14,11 +12,14 @@ public class ReferenceNote extends Note {
         notes.add(taggedNote);
     }
 
-    public boolean alreadyTagged(String note) {
+    public boolean hasTag(String note) {
         return notes.contains(note);
     }
 
     public void addTag(String note) {
         notes.add(note);
+    }
+    public void removeTag(String note) {
+        notes.remove(note);
     }
 }

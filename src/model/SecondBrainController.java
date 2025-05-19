@@ -3,7 +3,6 @@ package model;
 import enums.NoteType;
 import exceptions.*;
 
-import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -133,10 +132,9 @@ public class SecondBrainController {
         if (!notes.containsKey(name)){
             throw new NoteNotFoundException();
         }
-
         if(notes.containsKey(tag)) {
             ReferenceNote note = (ReferenceNote) notes.get(tag);
-            if(note.alreadyTagged(name)){
+            if(note.hasTag(name)){
                 throw new TagAlreadyExistsException();
             } else {
                 note.addTag(name);
@@ -146,5 +144,17 @@ public class SecondBrainController {
             notes.put(tag, note);
         }
 
+    }
+
+    public void removeReferenceNote(String name, String tag) throws NoteNotFoundException, TagNotFoundException {
+        if (!notes.containsKey(name)){
+            throw new NoteNotFoundException();
+        }
+        if(notes.containsKey(tag)) {
+            ReferenceNote note = (ReferenceNote) notes.get(tag);
+            if(note.hasTag(name)){
+                note.removeTag(name);
+            } else throw new TagNotFoundException();
+        }else throw new TagNotFoundException();
     }
 }

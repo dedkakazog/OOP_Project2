@@ -22,7 +22,8 @@ public class Main {
     //composed strings
     private static final String MSG_NOTE_ADDED = "Note %s created successfully with links to %d notes.%n";
     private static final String MSG_NOTE_UPDATED = "Note %s updated. It now has %d links.%n";
-    private static final String MSG_NOTE_TAGGED =  "%s tagged with %s.";
+    private static final String MSG_NOTE_TAGGED =  "%s tagged with %s.%n";
+    private static final String MSG_TAG_DELETED = "Note on %s is no longer tagged with %s!%n";
 
     public static void main(String[] args) {
         SecondBrainController controller = new SecondBrainController();
@@ -145,7 +146,7 @@ public class Main {
     }
 
     private static void addTag(Scanner in, SecondBrainController controller){
-        String name = in.nextLine().trim(); in.next();
+        String name = in.nextLine().trim(); in.next();///////я хз нужен ли тут ин.некст так как в условии написано, что при вводе тега дается слово TAG, но в примерах его нет
         String tag = in.nextLine().trim();
         try{
             controller.addReferenceNote(name, tag);
@@ -161,7 +162,8 @@ public class Main {
         String name = in.nextLine().trim();
         String tag = in.nextLine().trim();
         try{
-
+            controller.removeReferenceNote(name, tag);
+            System.out.printf(MSG_TAG_DELETED, name, tag);
         }catch (NoteNotFoundException e){
             System.out.printf(e.getMessage(), name);
         }catch (TagNotFoundException e){
