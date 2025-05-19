@@ -1,7 +1,7 @@
 package exceptions;
 
 public class TagNotFoundException extends RuntimeException {
-    public TagNotFoundException(String message) {
-        super(message);
+    public TagNotFoundException() {
+        super("Note on %s is not tagged with %s!");
     }
 }

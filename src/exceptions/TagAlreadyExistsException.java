@@ -1,7 +1,7 @@
 package exceptions;
 
 public class TagAlreadyExistsException extends RuntimeException {
-    public TagAlreadyExistsException(String message) {
-        super(message);
+    public TagAlreadyExistsException() {
+        super("Note %s is already tagged with %s!");
     }
 }

@@ -2,7 +2,8 @@ package enums;
 
 public enum NoteType {
     PERMANENT("permanent"),
-    LITERATURE("literature");
+    LITERATURE("literature"),
+    REFERENCE("reference");
 
 
     private final String noteType;

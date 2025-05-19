@@ -22,6 +22,7 @@ public class Main {
     //composed strings
     private static final String MSG_NOTE_ADDED = "Note %s created successfully with links to %d notes.%n";
     private static final String MSG_NOTE_UPDATED = "Note %s updated. It now has %d links.%n";
+    private static final String MSG_NOTE_TAGGED =  "%s tagged with %s.";
 
     public static void main(String[] args) {
         SecondBrainController controller = new SecondBrainController();
@@ -144,11 +145,28 @@ public class Main {
     }
 
     private static void addTag(Scanner in, SecondBrainController controller){
-
+        String name = in.nextLine().trim(); in.next();
+        String tag = in.nextLine().trim();
+        try{
+            controller.addReferenceNote(name, tag);
+            System.out.printf(MSG_NOTE_TAGGED, name, tag);
+        }catch (NoteNotFoundException e){
+            System.out.printf(e.getMessage(), name);
+        }catch (TagAlreadyExistsException e){
+            System.out.printf(e.getMessage(), name, tag);
+        }
     }
 
     private static void removeTag(Scanner in, SecondBrainController controller){
+        String name = in.nextLine().trim();
+        String tag = in.nextLine().trim();
+        try{
 
+        }catch (NoteNotFoundException e){
+            System.out.printf(e.getMessage(), name);
+        }catch (TagNotFoundException e){
+            System.out.printf(e.getMessage(), name, tag);
+        }
     }
 
     private static void listTags(Scanner in, SecondBrainController controller){

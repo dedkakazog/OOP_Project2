@@ -128,4 +128,23 @@ public class SecondBrainController {
         ContentNote note = (ContentNote) notes.get(name);
         return note.getLinks();
     }
+
+    public void addReferenceNote(String name, String tag) throws NoteNotFoundException, TagAlreadyExistsException {
+        if (!notes.containsKey(name)){
+            throw new NoteNotFoundException();
+        }
+
+        if(notes.containsKey(tag)) {
+            ReferenceNote note = (ReferenceNote) notes.get(tag);
+            if(note.alreadyTagged(name)){
+                throw new TagAlreadyExistsException();
+            } else {
+                note.addTag(name);
+            }
+        } else {
+            ReferenceNote note = new ReferenceNote(NoteType.REFERENCE, tag, name);
+            notes.put(tag, note);
+        }
+
+    }
 }
