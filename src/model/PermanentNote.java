@@ -5,7 +5,7 @@ import enums.NoteType;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-public class PermanentNote extends Note {
+public class PermanentNote extends ContentNote {
     ArrayList<LocalDate> historyOfUpdates;
 
     public PermanentNote(NoteType type, LocalDate date, String name, String content) {

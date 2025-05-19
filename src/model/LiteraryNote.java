@@ -4,7 +4,7 @@ import enums.NoteType;
 
 import java.time.LocalDate;
 
-public class LiteraryNote extends Note {
+public class LiteraryNote extends ContentNote {
 
     String title;
     String author;

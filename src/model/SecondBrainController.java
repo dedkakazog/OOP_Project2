@@ -32,7 +32,7 @@ public class SecondBrainController {
         if (notes.containsKey(name)) {
             throw new NoteAlreadyExistsException(name);
         }
-        Note note = new PermanentNote(type, date, name, content);
+        ContentNote note = new PermanentNote(type, date, name, content);
         notes.put(name, note);
         addLinks(note);
     }
@@ -50,12 +50,12 @@ public class SecondBrainController {
         if (publicationDate.isAfter(currentDate)) {
             throw new NoTimeTravellingDocumentException();
         }
-        Note note = new LiteraryNote(type, date, name, content, title, author, publicationDate, URL, quote);
+        ContentNote note = new LiteraryNote(type, date, name, content, title, author, publicationDate, URL, quote);
         notes.put(name, note);
         addLinks(note);
     }
 
-    private void addLinks(Note note){
+    private void addLinks(ContentNote note){
         if (getLinksAmount(note.getContent()) > 0){
             note.clearLinks();
             ArrayList<String> links = getLinks(note.getContent());
@@ -71,7 +71,7 @@ public class SecondBrainController {
         if (!notes.containsKey(name)){
             throw new NoteNotFoundException();
         }
-        Note note = notes.get(name);
+        ContentNote note = (ContentNote) notes.get(name);
         return String.format(NOTE_DETAILS, name, note.getContent(), note.getNumLinks(), 0);
     }
     ///////////////////////////////////////////////////////////////////////////
@@ -113,7 +113,7 @@ public class SecondBrainController {
         if (date.isBefore(currentDate)) {
             throw new NoTimeTravellingException();
         }
-        Note note = notes.get(name);
+        ContentNote note = (ContentNote) notes.get(name);
         if(note instanceof PermanentNote permanentNote){
             permanentNote.recordUpdate(date);
             permanentNote.updateContent(content);
@@ -125,7 +125,7 @@ public class SecondBrainController {
     }
 
     public Iterator<String> getLinksIterator(String name) {
-        Note note = notes.get(name);
+        ContentNote note = (ContentNote) notes.get(name);
         return note.getLinks();
     }
 }
