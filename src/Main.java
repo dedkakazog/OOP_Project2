@@ -145,6 +145,7 @@ public class Main {
         }
     }
 
+
     private static void addTag(Scanner in, SecondBrainController controller){
         String name = in.nextLine().trim(); in.next();///////я хз нужен ли тут ин.некст так как в условии написано, что при вводе тега дается слово TAG, но в примерах его нет
         String tag = in.nextLine().trim();

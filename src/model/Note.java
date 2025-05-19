@@ -17,6 +17,7 @@ public abstract class Note {
         this.name = name;
     }
 
+
     public NoteType getType() {
         return type;
     }

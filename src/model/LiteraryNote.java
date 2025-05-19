@@ -20,3 +20,4 @@ public class LiteraryNote extends ContentNote {
         this.quote = quote;
     }
 }
+

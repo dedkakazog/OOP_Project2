@@ -13,6 +13,7 @@ public class PermanentNote extends ContentNote {
         historyOfUpdates = new ArrayList<>();
     }
 
+
     public void recordUpdate(LocalDate date) {
         historyOfUpdates.add(date);
         updateDate(date);

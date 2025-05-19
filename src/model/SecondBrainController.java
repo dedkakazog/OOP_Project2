@@ -146,6 +146,7 @@ public class SecondBrainController {
 
     }
 
+
     public void removeReferenceNote(String name, String tag) throws NoteNotFoundException, TagNotFoundException {
         if (!notes.containsKey(name)){
             throw new NoteNotFoundException();

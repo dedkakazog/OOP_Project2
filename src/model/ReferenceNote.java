@@ -16,6 +16,7 @@ public class ReferenceNote extends Note {
         return notes.contains(note);
     }
 
+
     public void addTag(String note) {
         notes.add(note);
     }

@@ -24,6 +24,7 @@ public abstract class ContentNote extends Note {
         return content;
     }
 
+
     public void addLink(String note) {
         links.add(note);
     }
