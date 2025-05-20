@@ -52,6 +52,7 @@ public class SecondBrainController {
         addLinks(note);
     }
 
+
     private void addLinks(ContentNote note){
         if (getLinksAmount(note.getContent()) > 0){
             note.clearLinks();
