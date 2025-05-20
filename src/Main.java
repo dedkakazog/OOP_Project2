@@ -200,8 +200,11 @@ public class Main {
         }
     }
 
-    private static void sortedTags(SecondBrainController controller){
-
+    private static void sortedTags(SecondBrainController controller){//////////не тестили
+        Iterator<String> it = controller.getSortedTags();
+        while(it.hasNext()){
+            System.out.println(it.next());
+        }
     }
 
     private static void listNotes(Scanner in, SecondBrainController controller){

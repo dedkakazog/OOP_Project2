@@ -51,12 +51,12 @@ public abstract class ContentNote extends Note {
         links.clear();
     }
 
-    public void addTag(String note) {
-        tags.add(note);
+    public void addTag(String tag) {
+        tags.add(tag);
     }
 
-    public void removeTag(String note) {
-        tags.remove(note);
+    public void removeTag(String tag) {
+        tags.remove(tag);
     }
 
     public Iterator<String> getTags() {

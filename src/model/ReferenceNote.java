@@ -7,6 +7,7 @@ import java.util.Iterator;
 
 public class ReferenceNote extends Note {
     private HashSet<String> notes;
+    private int ID;
 
     public ReferenceNote(NoteType type, String name) {
         super(type, name);
@@ -18,8 +19,9 @@ public class ReferenceNote extends Note {
     }
 
 
-    public void addNoteToTag(String note) {
+    public void addNoteToTag(String note, int ID) {
         notes.add(note);
+        this.ID = ID;
     }
 
     public void removeNoteFromTag(String note) {
@@ -28,5 +30,13 @@ public class ReferenceNote extends Note {
 
     public Iterator<String> getNotesIterator() {
         return notes.iterator();
+    }
+
+    public int getNumberOfNotes() {
+        return notes.size();
+    }
+
+    public int getID() {
+        return ID;
     }
 }

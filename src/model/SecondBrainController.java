@@ -13,6 +13,7 @@ public class SecondBrainController {
 
     private HashMap<String, Note> notes;
     private LocalDate currentDate;
+    private int ID;
 
     public SecondBrainController() {
         notes = new HashMap<>();
@@ -137,14 +138,14 @@ public class SecondBrainController {
             if(tag.hasTaggedNote(noteName)){
                 throw new TagAlreadyExistsException();
             } else {
-                tag.addNoteToTag(noteName);
+                tag.addNoteToTag(noteName, ID++);
                 note.addTag(tagName);
             }
         } else {
             ReferenceNote tag = new ReferenceNote(NoteType.REFERENCE, tagName);
             ContentNote note = (ContentNote) notes.get(noteName);
-            notes.put(tagName, note);
-            tag.addNoteToTag(noteName);
+            notes.put(tagName, tag);
+            tag.addNoteToTag(noteName, ID++);
             note.addTag(tagName);
         }
     }
@@ -160,6 +161,9 @@ public class SecondBrainController {
             if(tag.hasTaggedNote(name)){
                 tag.removeNoteFromTag(name);
                 note.removeTag(tagName);
+                if(tag.getNumberOfNotes() == 0){
+                    notes.remove(tagName);
+                }
             } else throw new TagNotFoundException();
         }else throw new TagNotFoundException();
     }
@@ -177,6 +181,36 @@ public class SecondBrainController {
             throw new NoteNotFoundException();
         }
         ReferenceNote note = (ReferenceNote) notes.get(tagName);
-        return note.getNotesIterator();
+        ArrayList<String> taggedNotes = new ArrayList<>();
+        Iterator<String> it = note.getNotesIterator();
+        while(it.hasNext()) {
+            taggedNotes.add(it.next());
+        }
+        Collections.sort(taggedNotes);
+        return taggedNotes.iterator();
+    }
+
+    public Iterator<String> getSortedTags(){
+        ArrayList<ReferenceNote> tags = new ArrayList<>();
+        ArrayList<String> tagNames = new ArrayList<>();
+        for (int i = 0; i < notes.size(); i++) {
+            if(notes.get(i) instanceof ReferenceNote) {
+                ReferenceNote note = (ReferenceNote) notes.get(i);
+                tags.add(note);
+            }
+        }
+        for (int i = 0; i < tags.size() - 1; i++) {
+            for (int j = 0; j < tags.size() - i - 1; j++) {
+                if(tags.get(j).getNumberOfNotes() < tags.get(j + 1).getNumberOfNotes() || (tags.get(j).getNumberOfNotes() == tags.get(j + 1).getNumberOfNotes() && tags.get(j).getID() > tags.get(j + 1).getID())) {
+                    ReferenceNote temp = tags.get(j);
+                    tags.set(j, tags.get(j + 1));
+                    tags.set(j + 1, temp);
+                }
+            }
+        }
+        for (ReferenceNote tag : tags) {
+            tagNames.add(tag.getName());
+        }
+        return tagNames.iterator();
     }
 }
