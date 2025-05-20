@@ -12,12 +12,10 @@ public class SecondBrainController {
     private static final String NOTE_DETAILS = "%s: %s %d links. %d tags.";
 
     private HashMap<String, Note> notes;
-    private HashMap<String, String> tags;
     private LocalDate currentDate;
 
     public SecondBrainController() {
         notes = new HashMap<>();
-        tags = new HashMap<>();
     }
 
 
@@ -128,34 +126,56 @@ public class SecondBrainController {
         return note.getLinks();
     }
 
-    public void addReferenceNote(String name, String tag) throws NoteNotFoundException, TagAlreadyExistsException {
-        if (!notes.containsKey(name)){
+    public void addTag(String noteName, String tagName) throws NoteNotFoundException, TagAlreadyExistsException {
+        if (!notes.containsKey(noteName)){
             throw new NoteNotFoundException();
         }
-        if(notes.containsKey(tag)) {
-            ReferenceNote note = (ReferenceNote) notes.get(tag);
-            if(note.hasTag(name)){
+        if(notes.containsKey(tagName)) {
+            ReferenceNote tag = (ReferenceNote) notes.get(tagName);
+            ContentNote note = (ContentNote) notes.get(noteName);
+            if(tag.hasTaggedNote(noteName)){
                 throw new TagAlreadyExistsException();
             } else {
-                note.addTag(name);
+                tag.addNoteToTag(noteName);
+                note.addTag(tagName);
             }
         } else {
-            ReferenceNote note = new ReferenceNote(NoteType.REFERENCE, tag, name);
-            notes.put(tag, note);
+            ReferenceNote tag = new ReferenceNote(NoteType.REFERENCE, tagName);
+            ContentNote note = (ContentNote) notes.get(noteName);
+            notes.put(tagName, note);
+            tag.addNoteToTag(noteName);
+            note.addTag(tagName);
         }
-
     }
 
 
-    public void removeReferenceNote(String name, String tag) throws NoteNotFoundException, TagNotFoundException {
+    public void removeTag(String name, String tagName) throws NoteNotFoundException, TagNotFoundException {
         if (!notes.containsKey(name)){
             throw new NoteNotFoundException();
         }
-        if(notes.containsKey(tag)) {
-            ReferenceNote note = (ReferenceNote) notes.get(tag);
-            if(note.hasTag(name)){
-                note.removeTag(name);
+        if(notes.containsKey(tagName)) {
+            ReferenceNote tag = (ReferenceNote) notes.get(tagName);
+            ContentNote note = (ContentNote) notes.get(name);
+            if(tag.hasTaggedNote(name)){
+                tag.removeNoteFromTag(name);
+                note.removeTag(tagName);
             } else throw new TagNotFoundException();
         }else throw new TagNotFoundException();
+    }
+
+    public Iterator<String> getTags(String noteName) throws NoteNotFoundException {
+        if(!notes.containsKey(noteName)) {
+            throw new NoteNotFoundException();
+        }
+        ContentNote note = (ContentNote) notes.get(noteName);
+        return note.getTags();
+    }
+
+    public Iterator<String> getTaggedNotes(String tagName) throws NoteNotFoundException {
+        if(!notes.containsKey(tagName)) {
+            throw new NoteNotFoundException();
+        }
+        ReferenceNote note = (ReferenceNote) notes.get(tagName);
+        return note.getNotesIterator();
     }
 }

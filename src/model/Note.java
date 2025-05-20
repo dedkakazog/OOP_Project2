@@ -25,4 +25,5 @@ public abstract class Note {
     public String getName() {
         return name;
     }
+
 }

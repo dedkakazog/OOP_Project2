@@ -3,24 +3,30 @@ package model;
 import enums.NoteType;
 
 import java.util.HashSet;
+import java.util.Iterator;
 
 public class ReferenceNote extends Note {
     private HashSet<String> notes;
-    public ReferenceNote(NoteType type, String name, String taggedNote) {
+
+    public ReferenceNote(NoteType type, String name) {
         super(type, name);
         notes = new HashSet<>();
-        notes.add(taggedNote);
     }
 
-    public boolean hasTag(String note) {
+    public boolean hasTaggedNote(String note) {
         return notes.contains(note);
     }
 
 
-    public void addTag(String note) {
+    public void addNoteToTag(String note) {
         notes.add(note);
     }
-    public void removeTag(String note) {
+
+    public void removeNoteFromTag(String note) {
         notes.remove(note);
+    }
+
+    public Iterator<String> getNotesIterator() {
+        return notes.iterator();
     }
 }

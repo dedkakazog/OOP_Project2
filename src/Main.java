@@ -18,6 +18,7 @@ public class Main {
     private static final String MSG_INVALID_DATE = "Invalid date!";
     private static final String MSG_INVALID_DOC_DATE = "Invalid document date!";
     private static final String MSG_NO_LINKED_NOTES = "No linked notes.";
+    private static final String MSG_NO_TAGS = "No tags.";
 
     //composed strings
     private static final String MSG_NOTE_ADDED = "Note %s created successfully with links to %d notes.%n";
@@ -38,8 +39,8 @@ public class Main {
                 case READ -> printNote(in, controller);
                 case UPDATE -> updateNote(in, controller);
                 case LINKS -> listLinks(in, controller);
-                case TAG -> addTag(in, controller);
-                case UNTAG -> removeTag(in, controller);
+                case TAG -> addTagToNote(in, controller);
+                case UNTAG -> removeTagFromNote(in, controller);
                 case TAGS -> listTags(in, controller);
                 case TAGGED -> listTagged(in, controller);
                 case TRENDING -> sortedTags(controller);
@@ -146,11 +147,11 @@ public class Main {
     }
 
 
-    private static void addTag(Scanner in, SecondBrainController controller){
-        String name = in.nextLine().trim(); in.next();///////я хз нужен ли тут ин.некст так как в условии написано, что при вводе тега дается слово TAG, но в примерах его нет
+    private static void addTagToNote(Scanner in, SecondBrainController controller){
+        String name = in.nextLine().trim(); ///////я хз нужен ли тут ин.некст так как в условии написано, что при вводе тега дается слово TAG, но в примерах его нет
         String tag = in.nextLine().trim();
         try{
-            controller.addReferenceNote(name, tag);
+            controller.addTag(name, tag);
             System.out.printf(MSG_NOTE_TAGGED, name, tag);
         }catch (NoteNotFoundException e){
             System.out.printf(e.getMessage(), name);
@@ -159,11 +160,11 @@ public class Main {
         }
     }
 
-    private static void removeTag(Scanner in, SecondBrainController controller){
+    private static void removeTagFromNote(Scanner in, SecondBrainController controller){
         String name = in.nextLine().trim();
         String tag = in.nextLine().trim();
         try{
-            controller.removeReferenceNote(name, tag);
+            controller.removeTag(name, tag);
             System.out.printf(MSG_TAG_DELETED, name, tag);
         }catch (NoteNotFoundException e){
             System.out.printf(e.getMessage(), name);
@@ -173,11 +174,30 @@ public class Main {
     }
 
     private static void listTags(Scanner in, SecondBrainController controller){
-
+        String name = in.nextLine().trim();
+        try {
+            Iterator<String> it = controller.getTags(name);
+            if(!it.hasNext()){
+                System.out.println(MSG_NO_TAGS);
+            }
+            while (it.hasNext()){
+                System.out.println(it.next());
+            }
+        }catch (NoteNotFoundException e){
+            System.out.printf(e.getMessage(), name);
+        }
     }
 
     private static void listTagged(Scanner in, SecondBrainController controller){
-
+        String tagName = in.nextLine().trim();
+        try{
+            Iterator<String> it = controller.getTaggedNotes(tagName);
+            while (it.hasNext()){
+                System.out.println(it.next());
+            }
+        }catch (NoteNotFoundException e){
+            System.out.printf(e.getMessage(), tagName);
+        }
     }
 
     private static void sortedTags(SecondBrainController controller){
