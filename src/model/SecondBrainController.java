@@ -21,36 +21,41 @@ public class SecondBrainController {
 
 
     public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, InvalidNoteKindException, NoTimeTravellingException {
-        if (notes.isEmpty()) {
-            setCurrentDate(date);
-        }
-        if (date != null && date.isBefore(currentDate)) {
-            throw new NoTimeTravellingException();
-        }
-        if (notes.containsKey(name)) {
-            throw new NoteAlreadyExistsException(name);
-        }
+        checkNoteConditions(name, date);
         ContentNote note = new PermanentNote(type, date, name, content);
+        changeDate(date);
         notes.put(name, note);
         addLinks(note);
     }
 
     public void addLitNote(NoteType type, LocalDate date, String name, String content, String title, String author, LocalDate publicationDate, String URL, String quote) throws NoteAlreadyExistsException, NoTimeTravellingException, NoTimeTravellingDocumentException {
-        if (notes.isEmpty()) {
-            setCurrentDate(date);
-        }
-        if (date.isBefore(currentDate)) {
-            throw new NoTimeTravellingException();
-        }
-        if (notes.containsKey(name)) {
-            throw new NoteAlreadyExistsException(name);
-        }
+        checkNoteConditions(name, date);
         if (publicationDate.isAfter(currentDate)) {
             throw new NoTimeTravellingDocumentException();
         }
         ContentNote note = new LiteraryNote(type, date, name, content, title, author, publicationDate, URL, quote);
         notes.put(name, note);
+        changeDate(date);
         addLinks(note);
+    }
+
+    private void checkNoteConditions(String name, LocalDate date) throws NoTimeTravellingException, NoTimeTravellingDocumentException {
+        if (notes.isEmpty()) {
+            setCurrentDate(date);
+        }
+        if (date.isBefore(currentDate) && !date.isEqual(currentDate)) {
+            throw new NoTimeTravellingException();
+        }
+        if (notes.containsKey(name)) {
+            throw new NoteAlreadyExistsException(name);
+        }
+    }
+
+
+    private void changeDate(LocalDate date) {
+        if(date.isAfter(currentDate)) {
+            setCurrentDate(date);
+        }
     }
 
 

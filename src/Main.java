@@ -62,24 +62,25 @@ public class Main {
         NoteType type = NoteType.toNoteType(input[0]);
         LocalDate date;
         try{
-            date = toLocalDate(input, CREATION_DATE_INDEX);
+            if(type == NoteType.LITERATURE){
+                String title = in.nextLine();
+                String author = in.nextLine();
+                String[] publicationDate = in.nextLine().split(" ");
+                String URL = in.nextLine();
+                String quote = in.nextLine();
+                date = toLocalDate(input, CREATION_DATE_INDEX);
+                createLiteratureNote(in, controller, name, content, type, date, title, author, publicationDate, URL, quote);
+            } else {
+                date = toLocalDate(input, CREATION_DATE_INDEX);
+                createPermanentNote(controller, name, content, type, date);
+            }
         } catch (DateTimeException e){
             System.out.println(MSG_INVALID_DATE);
-            return;
         }
-        if(type == NoteType.LITERATURE){
-            createLiteratureNote(in, controller, name, content, type, date);
-        } else {
-            createPermanentNote(controller, name, content, type, date);
-        }
+
     }
 
-    private static void createLiteratureNote(Scanner in, SecondBrainController controller, String name, String content, NoteType type, LocalDate date){
-        String title = in.nextLine();
-        String author = in.nextLine();
-        String[] publicationDate = in.nextLine().split(" ");
-        String URL = in.nextLine();
-        String quote = in.nextLine();
+    private static void createLiteratureNote(Scanner in, SecondBrainController controller, String name, String content, NoteType type, LocalDate date, String title, String author, String[] publicationDate, String URL, String quote){
         try {
             LocalDate publishDate = toLocalDate(publicationDate, DATE_INDEX);
             controller.addLitNote(type, date, name, content, title, author, publishDate, URL, quote);
