@@ -84,7 +84,7 @@ public class Main {
         try {
             LocalDate publishDate = toLocalDate(publicationDate, DATE_INDEX);
             controller.addLitNote(type, date, name, content, title, author, publishDate, URL, quote);
-            System.out.printf(MSG_NOTE_ADDED, name, controller.getLinksAmount(content));
+            System.out.printf(MSG_NOTE_ADDED, name, controller.findLinksNum(name));
         } catch (NoteAlreadyExistsException | NoTimeTravellingException | NoTimeTravellingDocumentException e){
             System.out.println(e.getMessage());
         }catch (DateTimeException e){
@@ -95,7 +95,7 @@ public class Main {
     private static void createPermanentNote(SecondBrainController controller, String name, String content, NoteType type, LocalDate date){
         try {
             controller.addPermNote(type, date, name, content);
-            System.out.printf(MSG_NOTE_ADDED, name, controller.getLinksAmount(content));
+            System.out.printf(MSG_NOTE_ADDED, name, controller.findLinksNum(name));
         } catch (NoteAlreadyExistsException | InvalidNoteKindException | NoTimeTravellingException e){
             System.out.println(e.getMessage());
         }
@@ -122,7 +122,7 @@ public class Main {
         try {
             LocalDate date = toLocalDate(input, DATE_INDEX);
             controller.updateNoteContent(name, content, date);
-            System.out.printf(MSG_NOTE_UPDATED, name, controller.getLinksAmount(content));
+            System.out.printf(MSG_NOTE_UPDATED, name, controller.findLinksNum(name));
         } catch (DateTimeException e){
             System.out.println(MSG_INVALID_DATE);
         } catch (NoteNotFoundException e){

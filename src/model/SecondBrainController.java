@@ -1,6 +1,5 @@
 package model;
 
-import com.sun.jdi.InvalidTypeException;
 import enums.NoteType;
 import exceptions.*;
 
@@ -31,10 +30,10 @@ public class SecondBrainController {
 
     public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, InvalidNoteKindException, NoTimeTravellingException {
         checkNoteConditions(name, date);
-        ContentNote note = new PermanentNote(type, date, name, content, ID++);
+        ContentNote note = new PermanentNote(type, date, name, modifyContent(content), ID++, getLinks(content));
         changeDate(date);
         notes.put(name, note);
-        addLinks(note);
+        addSubNotes(note, content, date);
     }
 
     public void addLitNote(NoteType type, LocalDate date, String name, String content, String title, String author, LocalDate publicationDate, String URL, String quote) throws NoteAlreadyExistsException, NoTimeTravellingException, NoTimeTravellingDocumentException {
@@ -42,17 +41,29 @@ public class SecondBrainController {
         if (publicationDate.isAfter(currentDate)) {
             throw new NoTimeTravellingDocumentException();
         }
-        ContentNote note = new LiteraryNote(type, date, name, content, title, author, publicationDate, URL, quote, ID++);
+        ContentNote note = new LiteratureNote(type, date, name, modifyContent(content), title, author, publicationDate, URL, quote, ID++, getLinks(content));
         notes.put(name, note);
         changeDate(date);
-        addLinks(note);
+        addSubNotes(note, content, date);
+    }
+
+    private void addSubNotes(ContentNote note, String content, LocalDate date){
+        if (note.getNumLinks() > 0) {
+            ArrayList<String> linkNoteNames = getLinks(content);
+            for (String linkNoteName : linkNoteNames) {
+                if (!notes.containsKey(linkNoteName)) {
+                    ContentNote linkNote = new PermanentNote(NoteType.PERMANENT, date, linkNoteName, linkNoteName + ".", ID++, new ArrayList<>());
+                    notes.put(linkNoteName, linkNote);
+                }
+            }
+        }
     }
 
     private void checkNoteConditions(String name, LocalDate date) throws NoTimeTravellingException, NoTimeTravellingDocumentException {
         if (notes.isEmpty()) {
             setCurrentDate(date);
         }
-        if (date.isBefore(currentDate) && !date.isEqual(currentDate)) {
+        if (date.isBefore(currentDate) && !date.isEqual(currentDate) ) {
             throw new NoTimeTravellingException();
         }
         if (notes.containsKey(name)) {
@@ -67,15 +78,16 @@ public class SecondBrainController {
         }
     }
 
+    public int findLinksNum(String name){
+        ContentNote note = (ContentNote) notes.get(name);
+        return note.getNumLinks();
+    }
 
-    private void addLinks(ContentNote note){
-        if (getLinksAmount(note.getContent()) > 0){
-            note.clearLinks();
-            ArrayList<String> links = getLinks(note.getContent());
-            for (int i = 0; i < getLinksAmount(note.getContent()); i++) {
-                note.addLink(links.get(i));
-            }
-        }
+
+    private void updateLinks(ContentNote note, String content) {
+        note.clearLinks();
+        ArrayList<String> links = getLinks(content);
+        note.loadLinks(links);
     }
 
 
@@ -109,15 +121,23 @@ public class SecondBrainController {
                 break;
             }
             String match = content.substring(openBracketIndex + 2, closeBracketIndex);
-            matches.add(match);
+            if (!matches.contains(match)){
+                matches.add(match);
+            }
             startIndex = closeBracketIndex + 2;
         }
+
         return matches;
     }
 
-    public int getLinksAmount(String content) {
-        return getLinks(content).size();
+    private String modifyContent(String content) {
+        ArrayList<String> links = getLinks(content);
+        for (String link : links) {
+            content = content.replace("[[" + link + "]]", link);
+        }
+        return content;
     }
+
 
     public void updateNoteContent(String name, String content, LocalDate date) throws NoteNotFoundException, NoTimeTravellingException {
         if (!notes.containsKey(name)){
@@ -129,15 +149,18 @@ public class SecondBrainController {
         ContentNote note = (ContentNote) notes.get(name);
         if(note instanceof PermanentNote permanentNote){
             permanentNote.recordUpdate(date, ID++);
-            permanentNote.updateContent(content);
+            permanentNote.updateContent(modifyContent(content));
         }else {
-            note.updateContent(content);
+            note.updateContent(modifyContent(content));
             note.updateDate(date, ID++);
         }
-        addLinks(note);
+        updateLinks(note, content);
     }
 
-    public Iterator<String> getLinksIterator(String name) {
+    public Iterator<String> getLinksIterator(String name) throws NoteNotFoundException{
+        if (!notes.containsKey(name)){
+            throw new NoteNotFoundException();
+        }
         ContentNote note = (ContentNote) notes.get(name);
         return note.getLinks();
     }

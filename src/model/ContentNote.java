@@ -1,21 +1,22 @@
 package model;
 import enums.NoteType;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
 public abstract class ContentNote extends Note {
     private LocalDate lastUpdate;
     private String content;
-    private HashSet<String> links;
+    private ArrayList<String> links;
     private HashSet<String> tags;
     private int ID;
 
-    public ContentNote(NoteType type, LocalDate date, String name, String content, int ID) {
+    public ContentNote(NoteType type, LocalDate date, String name, String content, int ID, ArrayList<String> links) {
         super(type, name);
         this.lastUpdate = date;
         this.content = content;
-        this.links = new HashSet<>();
+        this.links = links;
         this.tags = new HashSet<>();
         this.ID = ID;
     }
@@ -26,11 +27,6 @@ public abstract class ContentNote extends Note {
 
     public String getContent() {
         return content;
-    }
-
-
-    public void addLink(String note) {
-        links.add(note);
     }
 
     public Iterator<String> getLinks() {
@@ -52,6 +48,10 @@ public abstract class ContentNote extends Note {
 
     public void clearLinks() {
         links.clear();
+    }
+
+    public void loadLinks(ArrayList<String> links) {
+        this.links = links;
     }
 
     public void addTag(String tag) {

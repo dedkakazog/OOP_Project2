@@ -2,10 +2,6 @@ package model;
 
 import enums.NoteType;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 
 public abstract class Note {
 
