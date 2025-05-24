@@ -201,7 +201,14 @@ public class Main {
         }
     }
 
-    private static void sortedTags(SecondBrainController controller){//////////не тестили
+    /*private static void sortedTags(SecondBrainController controller){//////////не тестили ////////старый вариант
+        Iterator<String> it = controller.getSortedTags();
+        while(it.hasNext()){
+            System.out.println(it.next());
+        }
+    }*/
+
+    private static void sortedTags(SecondBrainController controller){//////тестил/новый вариант/работает
         Iterator<String> it = controller.getSortedTags();
         while(it.hasNext()){
             System.out.println(it.next());

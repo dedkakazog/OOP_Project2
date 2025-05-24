@@ -3,6 +3,7 @@ package model;
 import enums.NoteType;
 import exceptions.*;
 
+import javax.swing.text.html.HTML;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -10,13 +11,15 @@ import java.util.*;
 public class SecondBrainController {
 
     private static final String NOTE_DETAILS = "%s: %s %d links. %d tags.";
+    private static final int FIRST_ADDITION_TO_MAP = 1;
 
     private HashMap<String, Note> notes;
+    private TreeMap<Integer, LinkedList<String>> tags;
     private LocalDate currentDate;
-    private int ID;
 
     public SecondBrainController() {
         notes = new HashMap<>();
+        tags = new TreeMap<>();
     }
 
 
@@ -143,17 +146,45 @@ public class SecondBrainController {
             if(tag.hasTaggedNote(noteName)){
                 throw new TagAlreadyExistsException();
             } else {
-                tag.addNoteToTag(noteName, ID++);
+                int oldCount = tag.getNumberOfNotes();
+                removeTagFromMap(oldCount, tagName);
+                addTagToMap(oldCount + 1, tagName);
+                tag.addNoteToTag(noteName);
                 note.addTag(tagName);
             }
         } else {
             ReferenceNote tag = new ReferenceNote(NoteType.REFERENCE, tagName);
             ContentNote note = (ContentNote) notes.get(noteName);
             notes.put(tagName, tag);
-            tag.addNoteToTag(noteName, ID++);
+            addTagToMap(FIRST_ADDITION_TO_MAP, tagName);
+            tag.addNoteToTag(noteName);
             note.addTag(tagName);
         }
     }
+
+    private void addTagToMap(int count, String tag) {
+        tags.putIfAbsent(count, new LinkedList<>());
+        tags.get(count).add(tag);
+    }
+
+    private void removeTagFromMap(int count, String tag) {
+        LinkedList<String> listOfTags = tags.get(count);
+        if (listOfTags != null) {
+            listOfTags.remove(tag);
+            if (listOfTags.isEmpty()) {
+                tags.remove(count); // удаляю ключ, если список пуст
+            }
+        }
+    }
+
+    /*public Iterator<String> getAllTagsDescending() {
+        LinkedList<String> sortedTags = new LinkedList<>();
+        for (Map.Entry<Integer, LinkedList<String>> entry : tags.descendingMap().entrySet()) {
+            sortedTags.addAll(entry.getValue());
+        }
+        return sortedTags.iterator();
+    }*/
+
 
 
     public void removeTag(String name, String tagName) throws NoteNotFoundException, TagNotFoundException {
@@ -164,6 +195,7 @@ public class SecondBrainController {
             ReferenceNote tag = (ReferenceNote) notes.get(tagName);
             ContentNote note = (ContentNote) notes.get(name);
             if(tag.hasTaggedNote(name)){
+                removeTagFromMap(tag.getNumberOfNotes(), tagName);
                 tag.removeNoteFromTag(name);
                 note.removeTag(tagName);
                 if(tag.getNumberOfNotes() == 0){
@@ -195,7 +227,16 @@ public class SecondBrainController {
         return taggedNotes.iterator();
     }
 
-    public Iterator<String> getSortedTags(){
+    public Iterator<String> getSortedTags() {//новый вариант
+        LinkedList<String> sortedTags = new LinkedList<>();
+        for (Integer count : tags.descendingKeySet()) {
+            LinkedList<String> tagList = tags.get(count);
+            sortedTags.addAll(tagList);
+        }
+        return sortedTags.iterator();
+    }
+
+    /*public Iterator<String> getSortedTags(){///////старый вариант
         ArrayList<ReferenceNote> tags = new ArrayList<>();
         ArrayList<String> tagNames = new ArrayList<>();
         for (int i = 0; i < notes.size(); i++) {
@@ -217,5 +258,5 @@ public class SecondBrainController {
             tagNames.add(tag.getName());
         }
         return tagNames.iterator();
-    }
+    }*/
 }
