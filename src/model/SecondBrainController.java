@@ -1,10 +1,12 @@
 package model;
 
+import com.sun.jdi.InvalidTypeException;
 import enums.NoteType;
 import exceptions.*;
 
-import javax.swing.text.html.HTML;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 
@@ -12,20 +14,24 @@ public class SecondBrainController {
 
     private static final String NOTE_DETAILS = "%s: %s %d links. %d tags.";
     private static final int FIRST_ADDITION_TO_MAP = 1;
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd");
 
     private HashMap<String, Note> notes;
     private TreeMap<Integer, LinkedList<String>> tags;
     private LocalDate currentDate;
+    private int ID;
+
 
     public SecondBrainController() {
         notes = new HashMap<>();
         tags = new TreeMap<>();
+        ID = 0;
     }
 
 
     public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, InvalidNoteKindException, NoTimeTravellingException {
         checkNoteConditions(name, date);
-        ContentNote note = new PermanentNote(type, date, name, content);
+        ContentNote note = new PermanentNote(type, date, name, content, ID++);
         changeDate(date);
         notes.put(name, note);
         addLinks(note);
@@ -36,7 +42,7 @@ public class SecondBrainController {
         if (publicationDate.isAfter(currentDate)) {
             throw new NoTimeTravellingDocumentException();
         }
-        ContentNote note = new LiteraryNote(type, date, name, content, title, author, publicationDate, URL, quote);
+        ContentNote note = new LiteraryNote(type, date, name, content, title, author, publicationDate, URL, quote, ID++);
         notes.put(name, note);
         changeDate(date);
         addLinks(note);
@@ -122,11 +128,11 @@ public class SecondBrainController {
         }
         ContentNote note = (ContentNote) notes.get(name);
         if(note instanceof PermanentNote permanentNote){
-            permanentNote.recordUpdate(date);
+            permanentNote.recordUpdate(date, ID++);
             permanentNote.updateContent(content);
         }else {
             note.updateContent(content);
-            note.updateDate(date);
+            note.updateDate(date, ID++);
         }
         addLinks(note);
     }
@@ -235,6 +241,65 @@ public class SecondBrainController {
         }
         return sortedTags.iterator();
     }
+
+    public LocalDate validateStartDate(String dateStr) throws InvalidStartDateException{
+        try {
+            return LocalDate.parse(dateStr, DATE_FORMAT);
+        } catch (DateTimeParseException e) {
+            throw new InvalidStartDateException();
+        }
+    }
+
+    public LocalDate validateEndDate(String dateEnd) throws InvalidEndDateException {
+        try {
+            return LocalDate.parse(dateEnd, DATE_FORMAT);
+        } catch (DateTimeParseException e) {
+            throw new InvalidEndDateException();
+        }
+    }
+
+    public Iterator<String> getNotes(NoteType noteType, LocalDate startDate, LocalDate endDate) throws StartEndDateException {
+        if (startDate.isAfter(endDate)) {
+            throw new StartEndDateException();
+        }
+        ArrayList<ContentNote> filteredNotes = new ArrayList<>();
+        for (Note note : notes.values()) {
+            if (note instanceof ContentNote contentNote) {
+                if (contentNote.getType() == noteType) {
+                    LocalDate noteDate = contentNote.getLastUpdate();
+                    if (!noteDate.isBefore(startDate) && !noteDate.isAfter(endDate)) {
+                        filteredNotes.add(contentNote);
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < filteredNotes.size() - 1; i++) {
+            for (int j = 0; j < filteredNotes.size() - i - 1; j++) {
+                ContentNote note1 = filteredNotes.get(j);
+                ContentNote note2 = filteredNotes.get(j + 1);
+                LocalDate date1 = note1.getLastUpdate();
+                LocalDate date2 = note2.getLastUpdate();
+                boolean shouldSwap = false;
+                if (date1.isBefore(date2)) {//или after
+                    shouldSwap = true;
+                } else if (date1.isEqual(date2)) {
+                    if (note1.getID() < note2.getID()) {//или наоборот
+                        shouldSwap = true;
+                    }
+                }
+                if (shouldSwap) {
+                    filteredNotes.set(j, note2);
+                    filteredNotes.set(j + 1, note1);
+                }
+            }
+        }
+        ArrayList<String> noteNames = new ArrayList<>();
+        for (ContentNote note : filteredNotes) {
+            noteNames.add(note.getName());
+        }
+        return noteNames.iterator();
+    }
+
 
     /*public Iterator<String> getSortedTags(){///////старый вариант
         ArrayList<ReferenceNote> tags = new ArrayList<>();

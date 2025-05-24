@@ -69,7 +69,7 @@ public class Main {
                 String URL = in.nextLine();
                 String quote = in.nextLine();
                 date = toLocalDate(input, CREATION_DATE_INDEX);
-                createLiteratureNote(in, controller, name, content, type, date, title, author, publicationDate, URL, quote);
+                createLiteratureNote(controller, name, content, type, date, title, author, publicationDate, URL, quote);
             } else {
                 date = toLocalDate(input, CREATION_DATE_INDEX);
                 createPermanentNote(controller, name, content, type, date);
@@ -80,7 +80,7 @@ public class Main {
 
     }
 
-    private static void createLiteratureNote(Scanner in, SecondBrainController controller, String name, String content, NoteType type, LocalDate date, String title, String author, String[] publicationDate, String URL, String quote){
+    private static void createLiteratureNote(SecondBrainController controller, String name, String content, NoteType type, LocalDate date, String title, String author, String[] publicationDate, String URL, String quote){
         try {
             LocalDate publishDate = toLocalDate(publicationDate, DATE_INDEX);
             controller.addLitNote(type, date, name, content, title, author, publishDate, URL, quote);
@@ -216,7 +216,20 @@ public class Main {
     }
 
     private static void listNotes(Scanner in, SecondBrainController controller){
-
+        String noteType = in.nextLine().trim();
+        String startDateInput = in.nextLine().trim();
+        String endDateInput = in.nextLine().trim();
+        try {
+            NoteType type = NoteType.parse(noteType);
+            LocalDate startDate = controller.validateStartDate(startDateInput);
+            LocalDate endDate = controller.validateEndDate(endDateInput);
+            Iterator<String> it = controller.getNotes(type, startDate, endDate);
+            while (it.hasNext()){
+                System.out.println(it.next());
+            }
+        }catch (UnknownNoteKindException | InvalidStartDateException | InvalidEndDateException | StartEndDateException e){
+            System.out.printf(e.getMessage());
+        }
     }
 
     private static void deleteNote(Scanner in, SecondBrainController controller){

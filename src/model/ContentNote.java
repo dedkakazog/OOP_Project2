@@ -9,13 +9,15 @@ public abstract class ContentNote extends Note {
     private String content;
     private HashSet<String> links;
     private HashSet<String> tags;
+    private int ID;
 
-    public ContentNote(NoteType type, LocalDate date, String name, String content) {
+    public ContentNote(NoteType type, LocalDate date, String name, String content, int ID) {
         super(type, name);
         this.lastUpdate = date;
         this.content = content;
         this.links = new HashSet<>();
         this.tags = new HashSet<>();
+        this.ID = ID;
     }
 
     public LocalDate getLastUpdate() {
@@ -39,8 +41,9 @@ public abstract class ContentNote extends Note {
         return links.size();
     }
 
-    public void updateDate(LocalDate date) {
+    public void updateDate(LocalDate date, int ID) {
         this.lastUpdate = date;
+        this.ID = ID;
     }
 
     public void updateContent(String content) {
@@ -61,5 +64,9 @@ public abstract class ContentNote extends Note {
 
     public Iterator<String> getTags() {
         return tags.iterator();
+    }
+
+    public int getID(){
+        return ID;
     }
 }

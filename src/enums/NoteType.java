@@ -1,5 +1,7 @@
 package enums;
 
+import exceptions.UnknownNoteKindException;
+
 public enum NoteType {
     PERMANENT("permanent"),
     LITERATURE("literature"),
@@ -11,8 +13,17 @@ public enum NoteType {
         this.noteType = noteType;
     }
 
-    public String getNoteType() {
-        return noteType;
+    public static NoteType parse(String noteKindStr) throws UnknownNoteKindException {
+        if (noteKindStr == null) {
+            throw new UnknownNoteKindException();
+        }
+        if (noteKindStr.equals("permanent")) {
+            return PERMANENT;
+        } else if (noteKindStr.equals("literature")) {
+            return LITERATURE;
+        } else {
+            throw new UnknownNoteKindException();
+        }
     }
 
     public static NoteType toNoteType(String noteType) {

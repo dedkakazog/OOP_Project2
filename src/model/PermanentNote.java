@@ -11,15 +11,15 @@ public class PermanentNote extends ContentNote {
     ArrayList<LocalDate> historyOfUpdates;
     HashSet<ReferenceNote> tags = new HashSet<>();
 
-    public PermanentNote(NoteType type, LocalDate date, String name, String content) {
-        super(type, date, name, content);
+    public PermanentNote(NoteType type, LocalDate date, String name, String content, int ID) {
+        super(type, date, name, content, ID);
         historyOfUpdates = new ArrayList<>();
     }
 
 
-    public void recordUpdate(LocalDate date) {
+    public void recordUpdate(LocalDate date, int ID) {
         historyOfUpdates.add(date);
-        updateDate(date);
+        updateDate(date, ID);
     }
 
 }
