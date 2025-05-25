@@ -25,6 +25,7 @@ public class Main {
     private static final String MSG_NOTE_UPDATED = "Note %s updated. It now has %d links.%n";
     private static final String MSG_NOTE_TAGGED =  "%s tagged with %s.%n";
     private static final String MSG_TAG_DELETED = "Note on %s is no longer tagged with %s!%n";
+    private static final String MSG_NOTE_DELETED = "Note %s deleted.%n";
 
     public static void main(String[] args) {
         SecondBrainController controller = new SecondBrainController();
@@ -148,7 +149,7 @@ public class Main {
 
 
     private static void addTagToNote(Scanner in, SecondBrainController controller){
-        String name = in.nextLine().trim(); ///////я хз нужен ли тут ин.некст так как в условии написано, что при вводе тега дается слово TAG, но в примерах его нет
+        String name = in.nextLine().trim();
         String tag = in.nextLine().trim();
         try{
             controller.addTag(name, tag);
@@ -164,7 +165,7 @@ public class Main {
         String name = in.nextLine().trim();
         String tag = in.nextLine().trim();
         try{
-            controller.removeTag(name, tag);
+            controller.untag(name, tag);
             System.out.printf(MSG_TAG_DELETED, name, tag);
         }catch (NoteNotFoundException e){
             System.out.printf(e.getMessage(), name);
@@ -207,7 +208,7 @@ public class Main {
         }
     }*/
 
-    private static void listTags(SecondBrainController controller){//////тестил/новый вариант/работает
+    private static void listTags(SecondBrainController controller){
         Iterator<String> it = controller.getSortedTags();
         while(it.hasNext()){
             System.out.println(it.next());
@@ -235,13 +236,22 @@ public class Main {
         String name = in.nextLine().trim();
         try {
             controller.deleteNote(name);
+            System.out.printf(MSG_NOTE_DELETED, name);
         } catch (NoteNotFoundException e){
             System.out.printf(e.getMessage(), name);
         }
     }
-
-
-
-
-
 }
+
+/*
+create permanent 2025 05 05
+Robert Baratheon
+King Robert Baratheon was the seventeenth ruler of the Seven Kingdoms and the first king of the Baratheon dynasty.
+update Robert Baratheon
+2025 05 06
+King Robert Baratheon was the seventeenth ruler of the [[Seven Kingdoms]] and the first king of the [[Baratheon dynasty]]. The love of his life was [[Lyanna Stark]].
+tag Robert Baratheon
+king
+delete Seven Kingdoms
+links Robert Baratheon
+*/

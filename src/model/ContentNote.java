@@ -42,6 +42,14 @@ public abstract class ContentNote extends Note {
         this.ID = ID;
     }
 
+    public boolean hasLink(String link) {
+        return links.contains(link);
+    }
+
+    public void removeLink(String link) {
+        links.remove(link);
+    }
+
     public void updateContent(String content) {
         this.content = content;
     }

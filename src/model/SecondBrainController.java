@@ -119,11 +119,26 @@ public class SecondBrainController {
             ContentNote taggedNote = (ContentNote) notes.get(it.next());
             taggedNote.removeTag(tag.getName());
         }
+        removeTagFromMap(tag.getNumberOfNotes(), tag.getName());
         notes.remove(tag.getName());
     }
 
-    private void deleteContentNote(ContentNote note) {
-        //Iterator<String> it =
+    private void deleteContentNote(ContentNote delNote) {
+        String delNoteName = delNote.getName();
+        for (Note note: notes.values()) {
+            if(note instanceof PermanentNote || note instanceof LiteratureNote && ((ContentNote) note).hasLink(delNoteName)){
+                ((ContentNote) note).removeLink(delNoteName);
+            }
+        }
+        Iterator<String> it = delNote.getTagsIterator();
+        while(it.hasNext()){
+            ReferenceNote tag = (ReferenceNote) notes.get(it.next());
+            untag(delNoteName, tag.getName());
+            /*removeTagFromMap(tag.getNumberOfNotes(), tag.getName());
+            tag.removeNoteFromTag(delNoteName);
+            addTagToMap(tag.getNumberOfNotes(), tag.getName());*/
+        }
+        notes.remove(delNoteName);
     }
 
     private void setCurrentDate(LocalDate date) {
@@ -178,6 +193,7 @@ public class SecondBrainController {
             note.updateDate(date, ID++);
         }
         updateLinks(note, content);
+        addSubNotes(note, content, date);
     }
 
     public Iterator<String> getLinksIterator(String name) throws NoteNotFoundException{
@@ -239,7 +255,7 @@ public class SecondBrainController {
 
 
 
-    public void removeTag(String name, String tagName) throws NoteNotFoundException, TagNotFoundException {
+    public void untag(String name, String tagName) throws NoteNotFoundException, TagNotFoundException {
         if (!notes.containsKey(name)){
             throw new NoteNotFoundException();
         }
@@ -256,6 +272,8 @@ public class SecondBrainController {
         note.removeTag(tagName);
         if(tag.getNumberOfNotes() == 0){
             notes.remove(tagName);
+        }else{
+            addTagToMap(tag.getNumberOfNotes(), tagName);
         }
     }
 
