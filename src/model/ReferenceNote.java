@@ -7,31 +7,31 @@ import java.util.Iterator;
 
 public class ReferenceNote extends Note
 {
-    private HashSet<String> notes;
+    private HashSet<String> noteNames;
 
     public ReferenceNote(NoteType type, String name) {
         super(type, name);
-        notes = new HashSet<>();
+        noteNames = new HashSet<>();
     }
 
     public boolean hasTaggedNote(String note) {
-        return notes.contains(note);
+        return noteNames.contains(note);
     }
 
     public void addNoteToTag(String note) {
-        notes.add(note);
+        noteNames.add(note);
     }
 
     public void removeNoteFromTag(String note) {
-        notes.remove(note);
+        noteNames.remove(note);
     }
 
     public Iterator<String> getNotesIterator() {
-        return notes.iterator();
+        return noteNames.iterator();
     }
 
     public int getNumberOfNotes() {
-        return notes.size();
+        return noteNames.size();
     }
 
 }

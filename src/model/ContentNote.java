@@ -33,7 +33,7 @@ public abstract class ContentNote extends Note {
         return links.iterator();
     }
 
-    public int getNumLinks() {
+    public int getNumberOfLinks() {
         return links.size();
     }
 
@@ -54,9 +54,7 @@ public abstract class ContentNote extends Note {
         this.content = content;
     }
 
-    public void clearLinks() {
-        links.clear();
-    }
+
 
     public void loadLinks(ArrayList<String> links) {
         this.links = links;

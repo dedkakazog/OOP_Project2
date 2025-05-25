@@ -43,7 +43,7 @@ public class Main {
                 case TAG -> addTagToNote(in, controller);
                 case UNTAG -> removeTagFromNote(in, controller);
                 case TAGS -> listNoteTags(in, controller);
-                case TAGGED -> listTagged(in, controller);
+                case TAGGED -> listTaggedNotes(in, controller);
                 case TRENDING -> listTags(controller);
                 case NOTES -> listNotes(in, controller);
                 case DELETE -> deleteNote(in, controller);
@@ -69,17 +69,17 @@ public class Main {
                 String URL = in.nextLine();
                 String quote = in.nextLine();
                 date = toLocalDate(input, CREATION_DATE_INDEX);
-                createLiteratureNote(controller, name, content, type, date, title, author, publicationDate, URL, quote);
+                createLiteNote(controller, name, content, type, date, title, author, publicationDate, URL, quote);
             } else {
                 date = toLocalDate(input, CREATION_DATE_INDEX);
-                createPermanentNote(controller, name, content, type, date);
+                createPermNote(controller, name, content, type, date);
             }
         } catch (DateTimeException e){
             System.out.println(MSG_INVALID_DATE);
         }
     }
 
-    private static void createLiteratureNote(SecondBrainController controller, String name, String content, NoteType type, LocalDate date, String title, String author, String[] publicationDate, String URL, String quote){
+    private static void createLiteNote(SecondBrainController controller, String name, String content, NoteType type, LocalDate date, String title, String author, String[] publicationDate, String URL, String quote){
         try {
             LocalDate publishDate = toLocalDate(publicationDate, DATE_INDEX);
             controller.addLitNote(type, date, name, content, title, author, publishDate, URL, quote);
@@ -92,7 +92,7 @@ public class Main {
         }
     }
 
-    private static void createPermanentNote(SecondBrainController controller, String name, String content, NoteType type, LocalDate date){
+    private static void createPermNote(SecondBrainController controller, String name, String content, NoteType type, LocalDate date){
         try {
             controller.addPermNote(type, date, name, content);
             System.out.printf(MSG_NOTE_ADDED, name, controller.findLinksNum(name));
@@ -104,6 +104,8 @@ public class Main {
     private static LocalDate toLocalDate(String[] input, int lineStart){
         return LocalDate.of(Integer.parseInt(input[lineStart]), Integer.parseInt(input[lineStart + 1]), Integer.parseInt(input[lineStart + 2]));
     }
+
+
 
     private static void printNoteDetails(Scanner in, SecondBrainController controller){
         String name = in.nextLine().trim();
@@ -189,7 +191,7 @@ public class Main {
         }
     }
 
-    private static void listTagged(Scanner in, SecondBrainController controller){
+    private static void listTaggedNotes(Scanner in, SecondBrainController controller){
         String tagName = in.nextLine().trim();
         try{
             Iterator<String> it = controller.getTaggedNotes(tagName);

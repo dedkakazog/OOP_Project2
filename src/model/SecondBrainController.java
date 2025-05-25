@@ -11,8 +11,13 @@ import java.util.*;
 
 public class SecondBrainController {
 
-    private static final String NOTE_DETAILS = "%s: %s %d links. %d tags.";
     private static final int FIRST_ADDITION_TO_MAP = 1;
+
+    private static final String LINK_START = "[[";
+    private static final String LINK_END = "]]";
+    
+    private static final String NOTE_DETAILS = "%s: %s %d links. %d tags.";
+    
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd");
 
     private HashMap<String, Note> notes;
@@ -27,80 +32,258 @@ public class SecondBrainController {
         ID = 0;
     }
 
-
-    public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, InvalidNoteKindException, NoTimeTravellingException {
-        checkNoteConditions(name, date);
-        ContentNote note = new PermanentNote(type, date, name, getModifiedContent(content), ID++, getLinks(content));
-        changeDate(date);
-        notes.put(name, note);
-        addSubNotes(note, content, date);
-    }
-
+//create command
     public void addLitNote(NoteType type, LocalDate date, String name, String content, String title, String author, LocalDate publicationDate, String URL, String quote) throws NoteAlreadyExistsException, NoTimeTravellingException, NoTimeTravellingDocumentException {
-        checkNoteConditions(name, date);
+        validateNoteConditions(name, date);
         if (publicationDate.isAfter(currentDate)) {
             throw new NoTimeTravellingDocumentException();
         }
-        ContentNote note = new LiteratureNote(type, date, name, getModifiedContent(content), title, author, publicationDate, URL, quote, ID++, getLinks(content));
-        notes.put(name, note);
-        changeDate(date);
-        addSubNotes(note, content, date);
-    }
 
-    private void addSubNotes(ContentNote note, String content, LocalDate date){
-        if (note.getNumLinks() > 0) {
-            ArrayList<String> linkNoteNames = getLinks(content);
-            for (String linkNoteName : linkNoteNames) {
-                if (!notes.containsKey(linkNoteName)) {
-                    ContentNote linkNote = new PermanentNote(NoteType.PERMANENT, date, linkNoteName, linkNoteName + ".", ID++, new ArrayList<>());
-                    notes.put(linkNoteName, linkNote);
-                }
-            }
+        ContentNote note = new LiteratureNote(type, date, name, getModifiedContent(content), title, author, publicationDate, URL, quote, ID++, extractLinks(content));
+        notes.put(name, note);
+        addSubNotes(note, content, date);
+
+        if(date.isAfter(currentDate)) {
+            setCurrentDate(date);
         }
     }
 
-    private void checkNoteConditions(String name, LocalDate date) throws NoTimeTravellingException, NoteAlreadyExistsException {
+    public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, InvalidNoteKindException, NoTimeTravellingException {
+        validateNoteConditions(name, date);
+
+        ContentNote note = new PermanentNote(type, date, name, getModifiedContent(content), ID++, extractLinks(content));
+        notes.put(name, note);
+        addSubNotes(note, content, date);
+
+        if(date.isAfter(currentDate)) {
+            setCurrentDate(date);
+        }
+    }
+
+    private void validateNoteConditions(String name, LocalDate date) throws NoTimeTravellingException, NoteAlreadyExistsException {
         if (notes.isEmpty()) {
             setCurrentDate(date);
         }
         if (date.isBefore(currentDate) && !date.isEqual(currentDate) ) {
             throw new NoTimeTravellingException();
         }
-        if (notes.containsKey(name)) {
+        if (notes.containsKey(name)){
             throw new NoteAlreadyExistsException(name);
         }
     }
 
-
-    private void changeDate(LocalDate date) {
-        if(date.isAfter(currentDate)) {
-            setCurrentDate(date);
+    private void addSubNotes(ContentNote note, String content, LocalDate date){
+        if (note.getNumberOfLinks() > 0) {
+            ArrayList<String> linkNoteNames = extractLinks(content);
+            for (String linkNoteName : linkNoteNames) {
+                if (!notes.containsKey(linkNoteName)) {
+                    String linkNoteContent = linkNoteName + ".";
+                    addPermNote(NoteType.PERMANENT, date, linkNoteName, linkNoteContent);
+                }
+            }
         }
     }
 
     public int findLinksNum(String name){
         ContentNote note = (ContentNote) notes.get(name);
-        return note.getNumLinks();
+        return note.getNumberOfLinks();
     }
 
 
+//read command
+    public String getNoteDetails(String name) throws NoteNotFoundException{
+        ensureNoteExists(name);
+        ContentNote note = (ContentNote) notes.get(name);
+        return String.format(NOTE_DETAILS, name, note.getContent(), note.getNumberOfLinks(), note.getNumberOfTags());
+    }
+
+
+
+//update command
+    public void updateNoteContent(String name, String content, LocalDate date) throws NoteNotFoundException, NoTimeTravellingException {
+        ensureNoteExists(name);
+        if (date.isBefore(currentDate)) {
+            throw new NoTimeTravellingException();
+        }
+        ContentNote note = (ContentNote) notes.get(name);
+        if(note instanceof PermanentNote permanentNote){
+            permanentNote.recordUpdate(date, ID++);
+            permanentNote.updateContent(getModifiedContent(content));
+        }else {
+            note.updateContent(getModifiedContent(content));
+            note.updateDate(date, ID++);
+        }
+        updateLinks(note, content);
+        addSubNotes(note, content, date);
+    }
+
     private void updateLinks(ContentNote note, String content) {
-        note.clearLinks();
-        ArrayList<String> links = getLinks(content);
+        ArrayList<String> links = extractLinks(content);
         note.loadLinks(links);
     }
 
 
 
-    public String getNoteDetails(String name) throws NoteNotFoundException{
-        if (!notes.containsKey(name)){
-            throw new NoteNotFoundException();
-        }
-        ContentNote note = (ContentNote) notes.get(name);
-        return String.format(NOTE_DETAILS, name, note.getContent(), note.getNumLinks(), note.getNumberOfTags());
+//links command
+    public Iterator<String> getLinksIterator(String noteName) throws NoteNotFoundException{
+        ensureNoteExists(noteName);
+        ContentNote note = (ContentNote) notes.get(noteName);
+        return note.getLinks();
     }
 
 
+
+//tag command
+    public void addTag(String noteName, String tagName) throws NoteNotFoundException, TagAlreadyExistsException {
+        ensureNoteExists(noteName);
+
+        ContentNote note = (ContentNote) notes.get(noteName);
+        ReferenceNote tag = (ReferenceNote) notes.get(tagName);
+
+        if (tag != null) { // If the tag already exists
+            if (tag.hasTaggedNote(noteName)) {
+                throw new TagAlreadyExistsException();
+            }
+            int oldCount = tag.getNumberOfNotes();
+            removeTagFromMap(oldCount, tagName);
+            addTagToMap(oldCount + 1, tagName);
+        } else { // If the tag does not exist, create it
+            tag = new ReferenceNote(NoteType.REFERENCE, tagName);
+            notes.put(tagName, tag);
+            addTagToMap(FIRST_ADDITION_TO_MAP, tagName);
+        }
+        tag.addNoteToTag(noteName);
+        note.addTag(tagName);
+    }
+
+    private void addTagToMap(int count, String tagName) {
+        tags.putIfAbsent(count, new LinkedList<>());
+        tags.get(count).add(tagName);
+    }
+
+    private void removeTagFromMap(int count, String tagName) {
+        LinkedList<String> listOfTags = tags.get(count);
+        if (listOfTags != null) {
+            listOfTags.remove(tagName);
+            if (listOfTags.isEmpty()) {
+                tags.remove(count); // удаляю ключ, если список пуст
+            }
+        }
+    }
+
+
+
+//untag command
+    public void untag(String noteName, String tagName) throws NoteNotFoundException, TagNotFoundException {
+        ensureNoteExists(noteName);
+        ensureTagExists(tagName);
+
+        ReferenceNote tag = (ReferenceNote) notes.get(tagName);
+        ContentNote note = (ContentNote) notes.get(noteName);
+
+        if(!tag.hasTaggedNote(noteName)){
+            throw new TagNotFoundException();
+        }
+
+        removeTagFromMap(tag.getNumberOfNotes(), tagName);
+        tag.removeNoteFromTag(noteName);
+        note.removeTag(tagName);
+        if(tag.getNumberOfNotes() == 0){
+            notes.remove(tagName);
+        }else{
+            addTagToMap(tag.getNumberOfNotes(), tagName);
+        }
+    }
+
+
+
+//tags command
+    public Iterator<String> getTags(String noteName) throws NoteNotFoundException {
+        ensureNoteExists(noteName);
+        ContentNote note = (ContentNote) notes.get(noteName);
+        return note.getTagsIterator();
+    }
+
+
+
+//tagged command
+    public Iterator<String> getTaggedNotes(String tagName) throws TagNotFoundException {
+        ensureTagExists(tagName);
+
+        ReferenceNote tag = (ReferenceNote) notes.get(tagName);
+        ArrayList<String> taggedNotes = new ArrayList<>();
+        Iterator<String> it = tag.getNotesIterator();
+
+        while(it.hasNext()) {
+            taggedNotes.add(it.next());
+        }
+        Collections.sort(taggedNotes);
+        return taggedNotes.iterator();
+    }
+
+
+
+//trending command
+    public Iterator<String> getSortedTags() {
+        LinkedList<String> sortedTags = new LinkedList<>();
+        for (Integer count : tags.descendingKeySet()) {
+            LinkedList<String> tagList = tags.get(count);
+            sortedTags.addAll(tagList);
+        }
+        return sortedTags.iterator();
+    }
+
+
+
+//notes command
+    public Iterator<String> getNotes(NoteType noteType, LocalDate startDate, LocalDate endDate) throws StartEndDateException {
+        if (startDate.isAfter(endDate)) {
+            throw new StartEndDateException();
+        }
+        ArrayList<ContentNote> filteredNotes = new ArrayList<>();
+        for (Note note : notes.values()) {
+            if (note instanceof ContentNote contentNote) {
+                if (contentNote.getType() == noteType) {
+                    LocalDate noteDate = contentNote.getLastUpdate();
+                    if (!noteDate.isBefore(startDate) && !noteDate.isAfter(endDate)) {
+                        filteredNotes.add(contentNote);
+                    }
+                }
+            }
+        }
+        filteredNotes.sort((note1, note2) -> {
+            int dateComparison = note2.getLastUpdate().compareTo(note1.getLastUpdate()); // Сортировка по дате (убывать)
+            if (dateComparison == 0) {
+                return Integer.compare(note1.getID(), note2.getID()); // Вторичная сортировка по ID (возрастать)
+            }
+            return dateComparison;
+        });
+        ArrayList<String> noteNames = new ArrayList<>();
+        for (ContentNote note : filteredNotes) {
+            noteNames.add(note.getName());
+        }
+        return noteNames.iterator();
+    }
+
+    public LocalDate validateStartDate(String dateStr) throws InvalidStartDateException{
+        try {
+            return LocalDate.parse(dateStr, DATE_FORMAT);
+        } catch (DateTimeParseException e) {
+            throw new InvalidStartDateException();
+        }
+    }
+
+    public LocalDate validateEndDate(String dateEnd) throws InvalidEndDateException {
+        try {
+            return LocalDate.parse(dateEnd, DATE_FORMAT);
+        } catch (DateTimeParseException e) {
+            throw new InvalidEndDateException();
+        }
+    }
+
+
+
+//delete command
     public void deleteNote(String name) throws NoteNotFoundException {
         if (!notes.containsKey(name)) {
             throw new NoteNotFoundException();
@@ -134,27 +317,24 @@ public class SecondBrainController {
         while(it.hasNext()){
             ReferenceNote tag = (ReferenceNote) notes.get(it.next());
             untag(delNoteName, tag.getName());
-            /*removeTagFromMap(tag.getNumberOfNotes(), tag.getName());
-            tag.removeNoteFromTag(delNoteName);
-            addTagToMap(tag.getNumberOfNotes(), tag.getName());*/
         }
         notes.remove(delNoteName);
     }
 
-    private void setCurrentDate(LocalDate date) {
-        currentDate = date;
-    }
 
 
-    private ArrayList<String> getLinks(String content) {
+
+    //for all
+
+    private ArrayList<String> extractLinks(String content) {
         ArrayList<String> matches = new ArrayList<>();
         int startIndex = 0;
         while (true) {
-            int openBracketIndex = content.indexOf("[[", startIndex);
+            int openBracketIndex = content.indexOf(LINK_START, startIndex);
             if (openBracketIndex == -1) {
                 break;
             }
-            int closeBracketIndex = content.indexOf("]]", openBracketIndex);
+            int closeBracketIndex = content.indexOf(LINK_END, openBracketIndex);
             if (closeBracketIndex == -1) {
                 break;
             }
@@ -169,201 +349,36 @@ public class SecondBrainController {
     }
 
     private String getModifiedContent(String content) {
-        ArrayList<String> links = getLinks(content);
+        ArrayList<String> links = extractLinks(content);
         for (String link : links) {
-            content = content.replace("[[" + link + "]]", link);
+            content = content.replace(LINK_START + link + LINK_END, link);
         }
         return content;
     }
 
-
-    public void updateNoteContent(String name, String content, LocalDate date) throws NoteNotFoundException, NoTimeTravellingException {
-        if (!notes.containsKey(name)){
+    private void ensureNoteExists(String noteName) throws NoteNotFoundException {
+        if (!notes.containsKey(noteName)) {
             throw new NoteNotFoundException();
         }
-        if (date.isBefore(currentDate)) {
-            throw new NoTimeTravellingException();
-        }
-        ContentNote note = (ContentNote) notes.get(name);
-        if(note instanceof PermanentNote permanentNote){
-            permanentNote.recordUpdate(date, ID++);
-            permanentNote.updateContent(getModifiedContent(content));
-        }else {
-            note.updateContent(getModifiedContent(content));
-            note.updateDate(date, ID++);
-        }
-        updateLinks(note, content);
-        addSubNotes(note, content, date);
     }
 
-    public Iterator<String> getLinksIterator(String name) throws NoteNotFoundException{
-        if (!notes.containsKey(name)){
+    private void ensureTagExists(String tagName) throws NoteNotFoundException {
+        if (!notes.containsKey(tagName)) {
             throw new NoteNotFoundException();
         }
-        ContentNote note = (ContentNote) notes.get(name);
-        return note.getLinks();
     }
 
-    public void addTag(String noteName, String tagName) throws NoteNotFoundException, TagAlreadyExistsException {
-        if (!notes.containsKey(noteName)){
-            throw new NoteNotFoundException();
-        }
-        if(notes.containsKey(tagName)) {
-            ReferenceNote tag = (ReferenceNote) notes.get(tagName);
-            ContentNote note = (ContentNote) notes.get(noteName);
-            if(tag.hasTaggedNote(noteName)){
-                throw new TagAlreadyExistsException();
-            } else {
-                int oldCount = tag.getNumberOfNotes();
-                removeTagFromMap(oldCount, tagName);
-                addTagToMap(oldCount + 1, tagName);
-                tag.addNoteToTag(noteName);
-                note.addTag(tagName);
-            }
-        } else {
-            ReferenceNote tag = new ReferenceNote(NoteType.REFERENCE, tagName);
-            ContentNote note = (ContentNote) notes.get(noteName);
-            notes.put(tagName, tag);
-            addTagToMap(FIRST_ADDITION_TO_MAP, tagName);
-            tag.addNoteToTag(noteName);
-            note.addTag(tagName);
-        }
+    private void setCurrentDate(LocalDate date) {
+        currentDate = date;
     }
 
-    private void addTagToMap(int count, String tag) {
-        tags.putIfAbsent(count, new LinkedList<>());
-        tags.get(count).add(tag);
-    }
 
-    private void removeTagFromMap(int count, String tag) {
-        LinkedList<String> listOfTags = tags.get(count);
-        if (listOfTags != null) {
-            listOfTags.remove(tag);
-            if (listOfTags.isEmpty()) {
-                tags.remove(count); // удаляю ключ, если список пуст
-            }
-        }
-    }
-
-    /*public Iterator<String> getAllTagsDescending() {
+     /*public Iterator<String> getAllTagsDescending() {
         LinkedList<String> sortedTags = new LinkedList<>();
         for (Map.Entry<Integer, LinkedList<String>> entry : tags.descendingMap().entrySet()) {
             sortedTags.addAll(entry.getValue());
         }
         return sortedTags.iterator();
-    }*/
-
-
-
-    public void untag(String name, String tagName) throws NoteNotFoundException, TagNotFoundException {
-        if (!notes.containsKey(name)){
-            throw new NoteNotFoundException();
-        }
-        if(!notes.containsKey(tagName)){
-            throw new TagNotFoundException();
-        }
-        ReferenceNote tag = (ReferenceNote) notes.get(tagName);
-        ContentNote note = (ContentNote) notes.get(name);
-        if(!tag.hasTaggedNote(name)){
-            throw new TagNotFoundException();
-        }
-        removeTagFromMap(tag.getNumberOfNotes(), tagName);
-        tag.removeNoteFromTag(name);
-        note.removeTag(tagName);
-        if(tag.getNumberOfNotes() == 0){
-            notes.remove(tagName);
-        }else{
-            addTagToMap(tag.getNumberOfNotes(), tagName);
-        }
-    }
-
-    public Iterator<String> getTags(String noteName) throws NoteNotFoundException {
-        if(!notes.containsKey(noteName)) {
-            throw new NoteNotFoundException();
-        }
-        ContentNote note = (ContentNote) notes.get(noteName);
-        return note.getTagsIterator();
-    }
-
-    public Iterator<String> getTaggedNotes(String tagName) throws NoteNotFoundException {
-        if(!notes.containsKey(tagName)) {
-            throw new NoteNotFoundException();
-        }
-        ReferenceNote note = (ReferenceNote) notes.get(tagName);
-        ArrayList<String> taggedNotes = new ArrayList<>();
-        Iterator<String> it = note.getNotesIterator();
-        while(it.hasNext()) {
-            taggedNotes.add(it.next());
-        }
-        Collections.sort(taggedNotes);
-        return taggedNotes.iterator();
-    }
-
-    public Iterator<String> getSortedTags() {//новый вариант
-        LinkedList<String> sortedTags = new LinkedList<>();
-        for (Integer count : tags.descendingKeySet()) {
-            LinkedList<String> tagList = tags.get(count);
-            sortedTags.addAll(tagList);
-        }
-        return sortedTags.iterator();
-    }
-
-    public LocalDate validateStartDate(String dateStr) throws InvalidStartDateException{
-        try {
-            return LocalDate.parse(dateStr, DATE_FORMAT);
-        } catch (DateTimeParseException e) {
-            throw new InvalidStartDateException();
-        }
-    }
-
-    public LocalDate validateEndDate(String dateEnd) throws InvalidEndDateException {
-        try {
-            return LocalDate.parse(dateEnd, DATE_FORMAT);
-        } catch (DateTimeParseException e) {
-            throw new InvalidEndDateException();
-        }
-    }
-
-    public Iterator<String> getNotes(NoteType noteType, LocalDate startDate, LocalDate endDate) throws StartEndDateException {
-        if (startDate.isAfter(endDate)) {
-            throw new StartEndDateException();
-        }
-        ArrayList<ContentNote> filteredNotes = new ArrayList<>();
-        for (Note note : notes.values()) {
-            if (note instanceof ContentNote contentNote) {
-                if (contentNote.getType() == noteType) {
-                    LocalDate noteDate = contentNote.getLastUpdate();
-                    if (!noteDate.isBefore(startDate) && !noteDate.isAfter(endDate)) {
-                        filteredNotes.add(contentNote);
-                    }
-                }
-            }
-        }
-        for (int i = 0; i < filteredNotes.size() - 1; i++) {
-            for (int j = 0; j < filteredNotes.size() - i - 1; j++) {
-                ContentNote note1 = filteredNotes.get(j);
-                ContentNote note2 = filteredNotes.get(j + 1);
-                LocalDate date1 = note1.getLastUpdate();
-                LocalDate date2 = note2.getLastUpdate();
-                boolean shouldSwap = false;
-                if (date1.isBefore(date2)) {//или after
-                    shouldSwap = true;
-                } else if (date1.isEqual(date2)) {
-                    if (note1.getID() < note2.getID()) {//или наоборот
-                        shouldSwap = true;
-                    }
-                }
-                if (shouldSwap) {
-                    filteredNotes.set(j, note2);
-                    filteredNotes.set(j + 1, note1);
-                }
-            }
-        }
-        ArrayList<String> noteNames = new ArrayList<>();
-        for (ContentNote note : filteredNotes) {
-            noteNames.add(note.getName());
-        }
-        return noteNames.iterator();
     }
 
 

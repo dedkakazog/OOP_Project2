@@ -4,7 +4,6 @@ import enums.NoteType;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class LiteratureNote extends ContentNote {
 
@@ -13,6 +12,7 @@ public class LiteratureNote extends ContentNote {
     LocalDate publicationDate;
     String URL;
     String quote;
+
     public LiteratureNote(NoteType type, LocalDate date, String name, String content, String title, String author, LocalDate publicationDate, String URL, String quote, int ID, ArrayList<String> links) {
         super(type, date, name, content, ID, links);
         this.title = title;
