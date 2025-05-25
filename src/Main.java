@@ -232,7 +232,12 @@ public class Main {
     }
 
     private static void deleteNote(Scanner in, SecondBrainController controller){
-
+        String name = in.nextLine().trim();
+        try {
+            controller.deleteNote(name);
+        } catch (NoteNotFoundException e){
+            System.out.printf(e.getMessage(), name);
+        }
     }
 
 

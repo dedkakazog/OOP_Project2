@@ -5,8 +5,10 @@ import enums.NoteType;
 import java.util.HashSet;
 import java.util.Iterator;
 
-public class ReferenceNote extends Note {
+public class ReferenceNote extends Note
+{
     private HashSet<String> notes;
+
     public ReferenceNote(NoteType type, String name) {
         super(type, name);
         notes = new HashSet<>();

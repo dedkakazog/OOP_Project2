@@ -101,7 +101,30 @@ public class SecondBrainController {
     }
 
 
+    public void deleteNote(String name) throws NoteNotFoundException {
+        if (!notes.containsKey(name)) {
+            throw new NoteNotFoundException();
+        }
+        Note note = notes.get(name);
+        if (note.getType() == NoteType.REFERENCE) {
+            deleteReferenceNote((ReferenceNote) note);
+        } else  {
+            deleteContentNote((ContentNote) note);
+        }
+    }
 
+    private void deleteReferenceNote(ReferenceNote tag){
+        Iterator<String> it = tag.getNotesIterator();
+        while(it.hasNext()){
+            ContentNote taggedNote = (ContentNote) notes.get(it.next());
+            taggedNote.removeTag(tag.getName());
+        }
+        notes.remove(tag.getName());
+    }
+
+    private void deleteContentNote(ContentNote note) {
+        //Iterator<String> it =
+    }
 
     private void setCurrentDate(LocalDate date) {
         currentDate = date;
@@ -220,7 +243,6 @@ public class SecondBrainController {
         if (!notes.containsKey(name)){
             throw new NoteNotFoundException();
         }
-
         if(!notes.containsKey(tagName)){
             throw new TagNotFoundException();
         }
