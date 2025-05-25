@@ -30,7 +30,7 @@ public class SecondBrainController {
 
     public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, InvalidNoteKindException, NoTimeTravellingException {
         checkNoteConditions(name, date);
-        ContentNote note = new PermanentNote(type, date, name, modifyContent(content), ID++, getLinks(content));
+        ContentNote note = new PermanentNote(type, date, name, getModifiedContent(content), ID++, getLinks(content));
         changeDate(date);
         notes.put(name, note);
         addSubNotes(note, content, date);
@@ -41,7 +41,7 @@ public class SecondBrainController {
         if (publicationDate.isAfter(currentDate)) {
             throw new NoTimeTravellingDocumentException();
         }
-        ContentNote note = new LiteratureNote(type, date, name, modifyContent(content), title, author, publicationDate, URL, quote, ID++, getLinks(content));
+        ContentNote note = new LiteratureNote(type, date, name, getModifiedContent(content), title, author, publicationDate, URL, quote, ID++, getLinks(content));
         notes.put(name, note);
         changeDate(date);
         addSubNotes(note, content, date);
@@ -59,7 +59,7 @@ public class SecondBrainController {
         }
     }
 
-    private void checkNoteConditions(String name, LocalDate date) throws NoTimeTravellingException, NoTimeTravellingDocumentException {
+    private void checkNoteConditions(String name, LocalDate date) throws NoTimeTravellingException, NoteAlreadyExistsException {
         if (notes.isEmpty()) {
             setCurrentDate(date);
         }
@@ -91,15 +91,15 @@ public class SecondBrainController {
     }
 
 
-/// ////////////////////////////////////////////////////////////
+
     public String getNoteDetails(String name) throws NoteNotFoundException{
         if (!notes.containsKey(name)){
             throw new NoteNotFoundException();
         }
         ContentNote note = (ContentNote) notes.get(name);
-        return String.format(NOTE_DETAILS, name, note.getContent(), note.getNumLinks(), 0);
+        return String.format(NOTE_DETAILS, name, note.getContent(), note.getNumLinks(), note.getNumberOfTags());
     }
-    ///////////////////////////////////////////////////////////////////////////
+
 
 
 
@@ -130,7 +130,7 @@ public class SecondBrainController {
         return matches;
     }
 
-    private String modifyContent(String content) {
+    private String getModifiedContent(String content) {
         ArrayList<String> links = getLinks(content);
         for (String link : links) {
             content = content.replace("[[" + link + "]]", link);
@@ -149,9 +149,9 @@ public class SecondBrainController {
         ContentNote note = (ContentNote) notes.get(name);
         if(note instanceof PermanentNote permanentNote){
             permanentNote.recordUpdate(date, ID++);
-            permanentNote.updateContent(modifyContent(content));
+            permanentNote.updateContent(getModifiedContent(content));
         }else {
-            note.updateContent(modifyContent(content));
+            note.updateContent(getModifiedContent(content));
             note.updateDate(date, ID++);
         }
         updateLinks(note, content);
@@ -220,18 +220,21 @@ public class SecondBrainController {
         if (!notes.containsKey(name)){
             throw new NoteNotFoundException();
         }
-        if(notes.containsKey(tagName)) {
-            ReferenceNote tag = (ReferenceNote) notes.get(tagName);
-            ContentNote note = (ContentNote) notes.get(name);
-            if(tag.hasTaggedNote(name)){
-                removeTagFromMap(tag.getNumberOfNotes(), tagName);
-                tag.removeNoteFromTag(name);
-                note.removeTag(tagName);
-                if(tag.getNumberOfNotes() == 0){
-                    notes.remove(tagName);
-                }
-            } else throw new TagNotFoundException();
-        }else throw new TagNotFoundException();
+
+        if(!notes.containsKey(tagName)){
+            throw new TagNotFoundException();
+        }
+        ReferenceNote tag = (ReferenceNote) notes.get(tagName);
+        ContentNote note = (ContentNote) notes.get(name);
+        if(!tag.hasTaggedNote(name)){
+            throw new TagNotFoundException();
+        }
+        removeTagFromMap(tag.getNumberOfNotes(), tagName);
+        tag.removeNoteFromTag(name);
+        note.removeTag(tagName);
+        if(tag.getNumberOfNotes() == 0){
+            notes.remove(tagName);
+        }
     }
 
     public Iterator<String> getTags(String noteName) throws NoteNotFoundException {
@@ -239,7 +242,7 @@ public class SecondBrainController {
             throw new NoteNotFoundException();
         }
         ContentNote note = (ContentNote) notes.get(noteName);
-        return note.getTags();
+        return note.getTagsIterator();
     }
 
     public Iterator<String> getTaggedNotes(String tagName) throws NoteNotFoundException {

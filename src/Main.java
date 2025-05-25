@@ -36,21 +36,20 @@ public class Main {
 
             switch(comm){
                 case CREATE -> createNote(in, controller);
-                case READ -> printNote(in, controller);
+                case READ -> printNoteDetails(in, controller);
                 case UPDATE -> updateNote(in, controller);
                 case LINKS -> listLinks(in, controller);
                 case TAG -> addTagToNote(in, controller);
                 case UNTAG -> removeTagFromNote(in, controller);
-                case TAGS -> listTags(in, controller);
+                case TAGS -> listNoteTags(in, controller);
                 case TAGGED -> listTagged(in, controller);
-                case TRENDING -> sortedTags(controller);
+                case TRENDING -> listTags(controller);
                 case NOTES -> listNotes(in, controller);
                 case DELETE -> deleteNote(in, controller);
                 case HELP -> System.out.println(comm.getHelp());
                 case EXIT -> System.out.println(MSG_EXIT);
                 case null -> System.out.println(MSG_UNKNOWN_COMM);
             }
-
         }while (comm != Command.EXIT);
         in.close();
     }
@@ -77,7 +76,6 @@ public class Main {
         } catch (DateTimeException e){
             System.out.println(MSG_INVALID_DATE);
         }
-
     }
 
     private static void createLiteratureNote(SecondBrainController controller, String name, String content, NoteType type, LocalDate date, String title, String author, String[] publicationDate, String URL, String quote){
@@ -85,9 +83,10 @@ public class Main {
             LocalDate publishDate = toLocalDate(publicationDate, DATE_INDEX);
             controller.addLitNote(type, date, name, content, title, author, publishDate, URL, quote);
             System.out.printf(MSG_NOTE_ADDED, name, controller.findLinksNum(name));
+
         } catch (NoteAlreadyExistsException | NoTimeTravellingException | NoTimeTravellingDocumentException e){
             System.out.println(e.getMessage());
-        }catch (DateTimeException e){
+        } catch (DateTimeException e){
             System.out.println(MSG_INVALID_DOC_DATE);
         }
     }
@@ -105,7 +104,7 @@ public class Main {
         return LocalDate.of(Integer.parseInt(input[lineStart]), Integer.parseInt(input[lineStart + 1]), Integer.parseInt(input[lineStart + 2]));
     }
 
-    private static void printNote(Scanner in, SecondBrainController controller){
+    private static void printNoteDetails(Scanner in, SecondBrainController controller){
         String name = in.nextLine().trim();
         try {
             String details = controller.getNoteDetails(name);
@@ -174,7 +173,7 @@ public class Main {
         }
     }
 
-    private static void listTags(Scanner in, SecondBrainController controller){
+    private static void listNoteTags(Scanner in, SecondBrainController controller){
         String name = in.nextLine().trim();
         try {
             Iterator<String> it = controller.getTags(name);
@@ -201,14 +200,14 @@ public class Main {
         }
     }
 
-    /*private static void sortedTags(SecondBrainController controller){//////////не тестили ////////старый вариант
+    /*private static void listTags(SecondBrainController controller){//////////не тестили ////////старый вариант
         Iterator<String> it = controller.getSortedTags();
         while(it.hasNext()){
             System.out.println(it.next());
         }
     }*/
 
-    private static void sortedTags(SecondBrainController controller){//////тестил/новый вариант/работает
+    private static void listTags(SecondBrainController controller){//////тестил/новый вариант/работает
         Iterator<String> it = controller.getSortedTags();
         while(it.hasNext()){
             System.out.println(it.next());
@@ -236,7 +235,7 @@ public class Main {
 
     }
 
-    //auxiliary methods
+
 
 
 

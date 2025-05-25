@@ -62,7 +62,11 @@ public abstract class ContentNote extends Note {
         tags.remove(tag);
     }
 
-    public Iterator<String> getTags() {
+    public int getNumberOfTags() {
+        return tags.size();
+    }
+
+    public Iterator<String> getTagsIterator () {
         return tags.iterator();
     }
 
