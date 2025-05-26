@@ -4,12 +4,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.TreeSet;
 
 public abstract class ContentNote extends Note {
     private LocalDate lastUpdate;
     private String content;
     private ArrayList<String> links;
-    private HashSet<String> tags;
+    private TreeSet<String> tags;
     private int ID;
 
     public ContentNote(NoteType type, LocalDate date, String name, String content, int ID, ArrayList<String> links) {
@@ -17,7 +18,7 @@ public abstract class ContentNote extends Note {
         this.lastUpdate = date;
         this.content = content;
         this.links = links;
-        this.tags = new HashSet<>();
+        this.tags = new TreeSet<>();
         this.ID = ID;
     }
 

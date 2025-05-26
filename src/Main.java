@@ -19,12 +19,13 @@ public class Main {
     private static final String MSG_INVALID_DOC_DATE = "Invalid document date!";
     private static final String MSG_NO_LINKED_NOTES = "No linked notes.";
     private static final String MSG_NO_TAGS = "No tags.";
+    private static final String MSG_NO_TAGS_DEFINED = "No tags defined yet!";
 
     //composed strings
     private static final String MSG_NOTE_ADDED = "Note %s created successfully with links to %d notes.%n";
     private static final String MSG_NOTE_UPDATED = "Note %s updated. It now has %d links.%n";
     private static final String MSG_NOTE_TAGGED =  "%s tagged with %s.%n";
-    private static final String MSG_TAG_DELETED = "Note on %s is no longer tagged with %s!%n";
+    private static final String MSG_TAG_DELETED = "Note %s no longer tagged with %s.%n";
     private static final String MSG_NOTE_DELETED = "Note %s deleted.%n";
 
     public static void main(String[] args) {
@@ -212,8 +213,12 @@ public class Main {
 
     private static void listTags(SecondBrainController controller){
         Iterator<String> it = controller.getSortedTags();
-        while(it.hasNext()){
-            System.out.println(it.next());
+        if(!it.hasNext()){
+            System.out.println(MSG_NO_TAGS_DEFINED);
+        } else {
+            while(it.hasNext()){
+                System.out.println(it.next());
+            }
         }
     }
 
