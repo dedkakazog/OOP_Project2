@@ -225,9 +225,10 @@ public class SecondBrainController {
 
 //trending command
     public Iterator<String> getSortedTags() {
-        LinkedList<String> sortedTags = new LinkedList<>();
-        for (Integer count : tags.descendingKeySet()) {
-            LinkedList<String> tagList = tags.get(count);
+        List<String> sortedTags = new LinkedList<>();
+        if (!tags.isEmpty()) {
+            int maxCount = tags.lastKey();
+            LinkedList<String> tagList = tags.get(maxCount);
             sortedTags.addAll(tagList);
         }
         return sortedTags.iterator();
@@ -235,7 +236,8 @@ public class SecondBrainController {
 
 
 
-//notes command
+
+    //notes command
     public Iterator<String> getNotes(NoteType noteType, LocalDate startDate, LocalDate endDate) throws StartEndDateException {
         if (startDate.isAfter(endDate)) {
             throw new StartEndDateException();
