@@ -250,14 +250,14 @@ public class SecondBrainController {
         for (Note note : notes.values()) {
             if (note instanceof ContentNote contentNote) {
                 if (contentNote.getType() == noteType) {
-                    LocalDate noteDate = contentNote.getLastUpdate();
+                    LocalDate noteDate = contentNote.getLastUpdateDate();
                     if (!noteDate.isBefore(startDate) && !noteDate.isAfter(endDate)) {
                         filteredNotes.add(contentNote);
                     }
                 }
             }
         }
-        filteredNotes.sort(Comparator.comparing(ContentNote::getLastUpdate).thenComparing(ContentNote::getID));
+        filteredNotes.sort(Comparator.comparing(ContentNote::getLastUpdateID));
         ArrayList<String> noteNames = new ArrayList<>();
         for (ContentNote note : filteredNotes) {
             noteNames.add(note.getName());
@@ -393,7 +393,7 @@ public class SecondBrainController {
         }
         for (int i = 0; i < tags.size() - 1; i++) {
             for (int j = 0; j < tags.size() - i - 1; j++) {
-                if(tags.get(j).getNumberOfNotes() < tags.get(j + 1).getNumberOfNotes() || (tags.get(j).getNumberOfNotes() == tags.get(j + 1).getNumberOfNotes() && tags.get(j).getID() > tags.get(j + 1).getID())) {
+                if(tags.get(j).getNumberOfNotes() < tags.get(j + 1).getNumberOfNotes() || (tags.get(j).getNumberOfNotes() == tags.get(j + 1).getNumberOfNotes() && tags.get(j).getLastUpdateID() > tags.get(j + 1).getLastUpdateID())) {
                     ReferenceNote temp = tags.get(j);
                     tags.set(j, tags.get(j + 1));
                     tags.set(j + 1, temp);

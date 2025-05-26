@@ -2,32 +2,44 @@ package model;
 import enums.NoteType;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeSet;
 
 public abstract class ContentNote extends Note {
-    private LocalDate lastUpdate;
+
     private String content;
     private ArrayList<String> links;
     private TreeSet<String> tags;
-    private int ID;
+    private LocalDate lastUpdateDate;
+    private int lastUpdateID;
 
     public ContentNote(NoteType type, LocalDate date, String name, String content, int ID, ArrayList<String> links) {
         super(type, name);
-        this.lastUpdate = date;
         this.content = content;
         this.links = links;
-        this.tags = new TreeSet<>();
-        this.ID = ID;
+        tags = new TreeSet<>();
+        lastUpdateDate = date;
+        lastUpdateID = ID;
     }
 
-    public LocalDate getLastUpdate() {
-        return lastUpdate;
+    public void updateContent(String content) {
+        this.content = content;
     }
 
     public String getContent() {
         return content;
+    }
+
+    public void loadLinks(ArrayList<String> links) {
+        this.links = links;
+    }
+
+    public void removeLink(String link) {
+        links.remove(link);
+    }
+
+    public boolean hasLink(String link) {
+        return links.contains(link);
     }
 
     public Iterator<String> getLinks() {
@@ -36,29 +48,6 @@ public abstract class ContentNote extends Note {
 
     public int getNumberOfLinks() {
         return links.size();
-    }
-
-    public void updateDate(LocalDate date, int ID) {
-        this.lastUpdate = date;
-        this.ID = ID;
-    }
-
-    public boolean hasLink(String link) {
-        return links.contains(link);
-    }
-
-    public void removeLink(String link) {
-        links.remove(link);
-    }
-
-    public void updateContent(String content) {
-        this.content = content;
-    }
-
-
-
-    public void loadLinks(ArrayList<String> links) {
-        this.links = links;
     }
 
     public void addTag(String tag) {
@@ -77,7 +66,16 @@ public abstract class ContentNote extends Note {
         return tags.iterator();
     }
 
-    public int getID(){
-        return ID;
+    public LocalDate getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void updateDate(LocalDate date, int ID) {
+        this.lastUpdateDate = date;
+        this.lastUpdateID = ID;
+    }
+
+    public int getLastUpdateID(){
+        return lastUpdateID;
     }
 }
