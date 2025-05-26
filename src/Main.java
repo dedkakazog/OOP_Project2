@@ -20,6 +20,7 @@ public class Main {
     private static final String MSG_NO_LINKED_NOTES = "No linked notes.";
     private static final String MSG_NO_TAGS = "No tags.";
     private static final String MSG_NO_TAGS_DEFINED = "No tags defined yet!";
+    private static final String MSG_N0_NOTES_IN_FRAME = "No notes in this time frame.";
 
     //composed strings
     private static final String MSG_NOTE_ADDED = "Note %s created successfully with links to %d notes.%n";
@@ -231,8 +232,12 @@ public class Main {
             LocalDate startDate = controller.validateStartDate(startDateInput);
             LocalDate endDate = controller.validateEndDate(endDateInput);
             Iterator<String> it = controller.getNotes(type, startDate, endDate);
-            while (it.hasNext()){
-                System.out.println(it.next());
+            if (!it.hasNext()) {
+                System.out.println(MSG_N0_NOTES_IN_FRAME);
+            } else {
+                while (it.hasNext()){
+                    System.out.println(it.next());
+                }
             }
         }catch (UnknownNoteKindException | InvalidStartDateException | InvalidEndDateException | StartEndDateException e){
             System.out.printf(e.getMessage());

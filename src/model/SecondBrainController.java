@@ -21,15 +21,17 @@ public class SecondBrainController {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd");
 
     private HashMap<String, Note> notes;
+
     private TreeMap<Integer, LinkedList<String>> tags;
+
     private LocalDate currentDate;
-    private int ID;
+    private int updateId;
 
 
     public SecondBrainController() {
         notes = new HashMap<>();
         tags = new TreeMap<>();
-        ID = 0;
+        updateId = 0;
     }
 
 //create command
@@ -39,9 +41,9 @@ public class SecondBrainController {
             throw new NoTimeTravellingDocumentException();
         }
 
-        ContentNote note = new LiteratureNote(type, date, name, getModifiedContent(content), title, author, publicationDate, URL, quote, ID++, extractLinks(content));
+        addSubNotes(content, date);
+        ContentNote note = new LiteratureNote(type, date, name, contentWithNoLinks(content), title, author, publicationDate, URL, quote, updateId++, extractLinks(content));
         notes.put(name, note);
-        addSubNotes(note, content, date);
 
         if(date.isAfter(currentDate)) {
             setCurrentDate(date);
@@ -51,9 +53,9 @@ public class SecondBrainController {
     public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, InvalidNoteKindException, NoTimeTravellingException {
         validateNoteConditions(name, date);
 
-        ContentNote note = new PermanentNote(type, date, name, getModifiedContent(content), ID++, extractLinks(content));
+        addSubNotes(content, date);
+        ContentNote note = new PermanentNote(type, date, name, contentWithNoLinks(content), updateId++, extractLinks(content));
         notes.put(name, note);
-        addSubNotes(note, content, date);
 
         if(date.isAfter(currentDate)) {
             setCurrentDate(date);
@@ -72,14 +74,17 @@ public class SecondBrainController {
         }
     }
 
-    private void addSubNotes(ContentNote note, String content, LocalDate date){
-        if (note.getNumberOfLinks() > 0) {
-            ArrayList<String> linkNoteNames = extractLinks(content);
-            for (String linkNoteName : linkNoteNames) {
-                if (!notes.containsKey(linkNoteName)) {
-                    String linkNoteContent = linkNoteName + ".";
-                    addPermNote(NoteType.PERMANENT, date, linkNoteName, linkNoteContent);
-                }
+    private void addSubNotes(String content, LocalDate date){
+        ArrayList<String> subNoteNames = extractLinks(content);
+        if (subNoteNames.isEmpty()) {
+            return;
+        }
+        for (String subNoteName : subNoteNames) {
+            if (!notes.containsKey(subNoteName)) {
+
+                String subNoteContent = subNoteName + ".";
+
+                addPermNote(NoteType.PERMANENT, date, subNoteName, subNoteContent);
             }
         }
     }
@@ -107,14 +112,14 @@ public class SecondBrainController {
         }
         ContentNote note = (ContentNote) notes.get(name);
         if(note instanceof PermanentNote permanentNote){
-            permanentNote.recordUpdate(date, ID++);
-            permanentNote.updateContent(getModifiedContent(content));
+            permanentNote.recordUpdate(date, updateId++);
+            permanentNote.updateContent(contentWithNoLinks(content));
         }else {
-            note.updateContent(getModifiedContent(content));
-            note.updateDate(date, ID++);
+            note.updateContent(contentWithNoLinks(content));
+            note.updateDate(date, updateId++);
         }
         updateLinks(note, content);
-        addSubNotes(note, content, date);
+        addSubNotes(content, date);
     }
 
     private void updateLinks(ContentNote note, String content) {
@@ -217,7 +222,7 @@ public class SecondBrainController {
         while(it.hasNext()) {
             taggedNotes.add(it.next());
         }
-        Collections.sort(taggedNotes);
+        taggedNotes.sort(String::compareTo);
         return taggedNotes.iterator();
     }
 
@@ -236,8 +241,7 @@ public class SecondBrainController {
 
 
 
-
-    //notes command
+//notes command
     public Iterator<String> getNotes(NoteType noteType, LocalDate startDate, LocalDate endDate) throws StartEndDateException {
         if (startDate.isAfter(endDate)) {
             throw new StartEndDateException();
@@ -253,13 +257,7 @@ public class SecondBrainController {
                 }
             }
         }
-        filteredNotes.sort((note1, note2) -> {
-            int dateComparison = note2.getLastUpdate().compareTo(note1.getLastUpdate()); // Сортировка по дате (убывать)
-            if (dateComparison == 0) {
-                return Integer.compare(note1.getID(), note2.getID()); // Вторичная сортировка по ID (возрастать)
-            }
-            return dateComparison;
-        });
+        filteredNotes.sort(Comparator.comparing(ContentNote::getLastUpdate).thenComparing(ContentNote::getID));
         ArrayList<String> noteNames = new ArrayList<>();
         for (ContentNote note : filteredNotes) {
             noteNames.add(note.getName());
@@ -350,7 +348,7 @@ public class SecondBrainController {
         return matches;
     }
 
-    private String getModifiedContent(String content) {
+    private String contentWithNoLinks(String content) {
         ArrayList<String> links = extractLinks(content);
         for (String link : links) {
             content = content.replace(LINK_START + link + LINK_END, link);
