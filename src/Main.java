@@ -46,7 +46,7 @@ public class Main {
                 case UNTAG -> removeTagFromNote(in, controller);
                 case TAGS -> listNoteTags(in, controller);
                 case TAGGED -> listTaggedNotes(in, controller);
-                case TRENDING -> listTags(controller);
+                case TRENDING -> listTrendingTags(controller);
                 case NOTES -> listNotes(in, controller);
                 case DELETE -> deleteNote(in, controller);
                 case HELP -> System.out.println(comm.getHelp());
@@ -205,15 +205,15 @@ public class Main {
         }
     }
 
-    /*private static void listTags(SecondBrainController controller){//////////не тестили ////////старый вариант
-        Iterator<String> it = controller.getSortedTags();
+    /*private static void listTrendingTags(SecondBrainController controller){//////////не тестили ////////старый вариант
+        Iterator<String> it = controller.getTrendingTags();
         while(it.hasNext()){
             System.out.println(it.next());
         }
     }*/
 
-    private static void listTags(SecondBrainController controller){
-        Iterator<String> it = controller.getSortedTags();
+    private static void listTrendingTags(SecondBrainController controller){
+        Iterator<String> it = controller.getTrendingTags();
         if(!it.hasNext()){
             System.out.println(MSG_NO_TAGS_DEFINED);
         } else {

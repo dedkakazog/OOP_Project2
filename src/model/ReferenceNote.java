@@ -4,14 +4,15 @@ import enums.NoteType;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.TreeSet;
 
 public class ReferenceNote extends Note
 {
-    private HashSet<String> noteNames;
+    private TreeSet<String> noteNames;
 
     public ReferenceNote(NoteType type, String name) {
         super(type, name);
-        noteNames = new HashSet<>();
+        noteNames = new TreeSet<>();
     }
 
     public boolean hasTaggedNote(String note) {

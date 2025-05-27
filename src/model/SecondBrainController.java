@@ -22,7 +22,7 @@ public class SecondBrainController {
 
     private HashMap<String, Note> notes;
 
-    private TreeMap<Integer, LinkedList<String>> tags;
+    private TreeMap<Integer, LinkedList<String>> sortedTags;
 
     private LocalDate currentDate;
     private int updateId;
@@ -30,7 +30,7 @@ public class SecondBrainController {
 
     public SecondBrainController() {
         notes = new HashMap<>();
-        tags = new TreeMap<>();
+        sortedTags = new TreeMap<>();
         updateId = 0;
     }
 
@@ -50,7 +50,7 @@ public class SecondBrainController {
         }
     }
 
-    public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, InvalidNoteKindException, NoTimeTravellingException {
+    public void addPermNote(NoteType type, LocalDate date, String name, String content) throws NoteAlreadyExistsException, NoTimeTravellingException {
         validateNoteConditions(name, date);
 
         addSubNotes(content, date);
@@ -76,15 +76,12 @@ public class SecondBrainController {
 
     private void addSubNotes(String content, LocalDate date){
         ArrayList<String> subNoteNames = extractLinks(content);
-        if (subNoteNames.isEmpty()) {
-            return;
-        }
-        for (String subNoteName : subNoteNames) {
-            if (!notes.containsKey(subNoteName)) {
-
-                String subNoteContent = subNoteName + ".";
-
-                addPermNote(NoteType.PERMANENT, date, subNoteName, subNoteContent);
+        if (!subNoteNames.isEmpty()) {
+            for (String subNoteName : subNoteNames) {
+                if (!notes.containsKey(subNoteName)) {
+                    String subNoteContent = subNoteName + ".";
+                    addPermNote(NoteType.PERMANENT, date, subNoteName, subNoteContent);
+                }
             }
         }
     }
@@ -162,16 +159,16 @@ public class SecondBrainController {
     }
 
     private void addTagToMap(int count, String tagName) {
-        tags.putIfAbsent(count, new LinkedList<>());
-        tags.get(count).add(tagName);
+        sortedTags.putIfAbsent(count, new LinkedList<>());
+        sortedTags.get(count).add(tagName);
     }
 
     private void removeTagFromMap(int count, String tagName) {
-        LinkedList<String> listOfTags = tags.get(count);
+        LinkedList<String> listOfTags = sortedTags.get(count);
         if (listOfTags != null) {
             listOfTags.remove(tagName);
             if (listOfTags.isEmpty()) {
-                tags.remove(count); // удаляю ключ, если список пуст
+                sortedTags.remove(count);
             }
         }
     }
@@ -202,7 +199,7 @@ public class SecondBrainController {
 
 
 
-//tags command
+//sortedTags command
     public Iterator<String> getTags(String noteName) throws NoteNotFoundException {
         ensureNoteExists(noteName);
         ContentNote note = (ContentNote) notes.get(noteName);
@@ -214,29 +211,19 @@ public class SecondBrainController {
 //tagged command
     public Iterator<String> getTaggedNotes(String tagName) throws TagNotFoundException {
         ensureTagExists(tagName);
-
         ReferenceNote tag = (ReferenceNote) notes.get(tagName);
-        ArrayList<String> taggedNotes = new ArrayList<>();
-        Iterator<String> it = tag.getNotesIterator();
-
-        while(it.hasNext()) {
-            taggedNotes.add(it.next());
-        }
-        taggedNotes.sort(String::compareTo);
-        return taggedNotes.iterator();
+        return tag.getNotesIterator();
     }
 
 
 
 //trending command
-    public Iterator<String> getSortedTags() {
-        List<String> sortedTags = new LinkedList<>();
-        if (!tags.isEmpty()) {
-            int maxCount = tags.lastKey();
-            LinkedList<String> tagList = tags.get(maxCount);
-            sortedTags.addAll(tagList);
+    public Iterator<String> getTrendingTags() {
+        List<String> trendingTags = new LinkedList<>();
+        if (!sortedTags.isEmpty()) {
+            trendingTags = sortedTags.get(sortedTags.lastKey()); // last key is the largest number
         }
-        return sortedTags.iterator();
+        return trendingTags.iterator();
     }
 
 
@@ -246,7 +233,7 @@ public class SecondBrainController {
         if (startDate.isAfter(endDate)) {
             throw new StartEndDateException();
         }
-        ArrayList<ContentNote> filteredNotes = new ArrayList<>();
+        List<ContentNote> filteredNotes = new ArrayList<>();
         for (Note note : notes.values()) {
             if (note instanceof ContentNote contentNote) {
                 if (contentNote.getType() == noteType) {
@@ -258,7 +245,7 @@ public class SecondBrainController {
             }
         }
         filteredNotes.sort(Comparator.comparing(ContentNote::getLastUpdateID));
-        ArrayList<String> noteNames = new ArrayList<>();
+        List<String> noteNames = new ArrayList<>();
         for (ContentNote note : filteredNotes) {
             noteNames.add(note.getName());
         }
@@ -285,9 +272,7 @@ public class SecondBrainController {
 
 //delete command
     public void deleteNote(String name) throws NoteNotFoundException {
-        if (!notes.containsKey(name)) {
-            throw new NoteNotFoundException();
-        }
+        ensureNoteExists(name);
         Note note = notes.get(name);
         if (note.getType() == NoteType.REFERENCE) {
             deleteReferenceNote((ReferenceNote) note);
@@ -375,32 +360,32 @@ public class SecondBrainController {
 
      /*public Iterator<String> getAllTagsDescending() {
         LinkedList<String> sortedTags = new LinkedList<>();
-        for (Map.Entry<Integer, LinkedList<String>> entry : tags.descendingMap().entrySet()) {
+        for (Map.Entry<Integer, LinkedList<String>> entry : sortedTags.descendingMap().entrySet()) {
             sortedTags.addAll(entry.getValue());
         }
         return sortedTags.iterator();
     }
 
 
-    /*public Iterator<String> getSortedTags(){///////старый вариант
-        ArrayList<ReferenceNote> tags = new ArrayList<>();
+    /*public Iterator<String> getTrendingTags(){///////старый вариант
+        ArrayList<ReferenceNote> sortedTags = new ArrayList<>();
         ArrayList<String> tagNames = new ArrayList<>();
         for (int i = 0; i < notes.size(); i++) {
             if(notes.get(i) instanceof ReferenceNote) {
                 ReferenceNote note = (ReferenceNote) notes.get(i);
-                tags.add(note);
+                sortedTags.add(note);
             }
         }
-        for (int i = 0; i < tags.size() - 1; i++) {
-            for (int j = 0; j < tags.size() - i - 1; j++) {
-                if(tags.get(j).getNumberOfNotes() < tags.get(j + 1).getNumberOfNotes() || (tags.get(j).getNumberOfNotes() == tags.get(j + 1).getNumberOfNotes() && tags.get(j).getLastUpdateID() > tags.get(j + 1).getLastUpdateID())) {
-                    ReferenceNote temp = tags.get(j);
-                    tags.set(j, tags.get(j + 1));
-                    tags.set(j + 1, temp);
+        for (int i = 0; i < sortedTags.size() - 1; i++) {
+            for (int j = 0; j < sortedTags.size() - i - 1; j++) {
+                if(sortedTags.get(j).getNumberOfNotes() < sortedTags.get(j + 1).getNumberOfNotes() || (sortedTags.get(j).getNumberOfNotes() == sortedTags.get(j + 1).getNumberOfNotes() && sortedTags.get(j).getLastUpdateID() > sortedTags.get(j + 1).getLastUpdateID())) {
+                    ReferenceNote temp = sortedTags.get(j);
+                    sortedTags.set(j, sortedTags.get(j + 1));
+                    sortedTags.set(j + 1, temp);
                 }
             }
         }
-        for (ReferenceNote tag : tags) {
+        for (ReferenceNote tag : sortedTags) {
             tagNames.add(tag.getName());
         }
         return tagNames.iterator();

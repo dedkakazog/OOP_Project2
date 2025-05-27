@@ -8,8 +8,10 @@ import java.util.TreeSet;
 public abstract class ContentNote extends Note {
 
     private String content;
+
     private ArrayList<String> links;
     private TreeSet<String> tags;
+
     private LocalDate lastUpdateDate;
     private int lastUpdateID;
 
