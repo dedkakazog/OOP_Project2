@@ -2,24 +2,20 @@ package model;
 
 import enums.NoteType;
 
+/**
+ * Base interface for all note types
+ */
+public interface Note {
 
-public abstract class Note {
+    /**
+     * Gets the type of the note
+     * @return note type
+     */
+    NoteType getType();
 
-    private NoteType type;
-    private String name;
-
-    public Note(NoteType type, String name) {
-        this.type = type;
-        this.name = name;
-    }
-
-
-    public NoteType getType() {
-        return type;
-    }
-
-    public String getName() {
-        return name;
-    }
-
+    /**
+     * Gets the name of the note
+     * @return note name
+     */
+    String getName();
 }

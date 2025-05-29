@@ -30,7 +30,7 @@ public class Main {
     private static final String MSG_NOTE_DELETED = "Note %s deleted.%n";
 
     public static void main(String[] args) {
-        SecondBrainController controller = new SecondBrainController();
+        SecondBrainController controller = new SecondBrainControllerClass();
         Scanner in = new Scanner(System.in);
         Command comm;
         do{

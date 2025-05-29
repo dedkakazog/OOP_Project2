@@ -1,38 +1,40 @@
 package model;
 
-import enums.NoteType;
-
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.TreeSet;
 
-public class ReferenceNote extends Note
-{
-    private TreeSet<String> noteNames;
+/**
+ * Interface for working with reference notes (tags)
+ */
+public interface ReferenceNote extends Note {
 
-    public ReferenceNote(NoteType type, String name) {
-        super(type, name);
-        noteNames = new TreeSet<>();
-    }
+    /**
+     * Checks if a note is tagged with this reference
+     * @param note note name to check
+     * @return true if note is tagged, false otherwise
+     */
+    boolean hasTaggedNote(String note);
 
-    public boolean hasTaggedNote(String note) {
-        return noteNames.contains(note);
-    }
+    /**
+     * Adds info that given note was tagged with this tag
+     * @param note note name to add
+     */
+    void addNoteToTag(String note);
 
-    public void addNoteToTag(String note) {
-        noteNames.add(note);
-    }
+    /**
+     * Removes info that given note was tagged with this tag
+     * @param note note name to remove
+     */
+    void removeNoteFromTag(String note);
 
-    public void removeNoteFromTag(String note) {
-        noteNames.remove(note);
-    }
+    /**
+     * Gets an iterator for traversing tagged notes
+     * @return iterator of tagged note names
+     */
+    Iterator<String> getNotesIterator();
 
-    public Iterator<String> getNotesIterator() {
-        return noteNames.iterator();
-    }
-
-    public int getNumberOfNotes() {
-        return noteNames.size();
-    }
-
+    /**
+     * Gets the number of tagged notes
+     * @return number of tagged notes
+     */
+    int getNumberOfNotes();
 }

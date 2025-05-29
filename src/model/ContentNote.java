@@ -1,83 +1,97 @@
 package model;
-import enums.NoteType;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.TreeSet;
 
-public abstract class ContentNote extends Note {
+/**
+ * Interface for working with content notes
+ */
+public  interface ContentNote extends Note {
 
-    private String content;
+    /**
+     * Updates the content of the note
+     * @param content new content
+     */
+    void updateContent(String content);
 
-    private ArrayList<String> links;
-    private TreeSet<String> tags;
+    /**
+     * Gets the content of the note
+     * @return note content
+     */
+    String getContent();
 
-    private LocalDate lastUpdateDate;
-    private int lastUpdateID;
+    /**
+     * Loads a list of links
+     * @param links list of links to load
+     */
+    void loadLinks(ArrayList<String> links);
 
-    public ContentNote(NoteType type, LocalDate date, String name, String content, int ID, ArrayList<String> links) {
-        super(type, name);
-        this.content = content;
-        this.links = links;
-        tags = new TreeSet<>();
-        lastUpdateDate = date;
-        lastUpdateID = ID;
-    }
+    /**
+     * Removes a link from the list
+     * @param link link to remove
+     */
+    void removeLink(String link);
 
-    public void updateContent(String content) {
-        this.content = content;
-    }
+    /**
+     * Checks if a link exists
+     * @param link link to check
+     * @return true if link exists, false otherwise
+     */
+    boolean hasLink(String link);
 
-    public String getContent() {
-        return content;
-    }
+    /**
+     * Gets an iterator for traversing links
+     * @return links iterator
+     */
+    Iterator<String> getLinks();
 
-    public void loadLinks(ArrayList<String> links) {
-        this.links = links;
-    }
+    /**
+     * Gets the number of links
+     * @return number of links
+     */
+    int getNumberOfLinks();
 
-    public void removeLink(String link) {
-        links.remove(link);
-    }
+    /**
+     * Adds a tag to the note
+     * @param tag tag to add
+     */
+    void addTag(String tag);
 
-    public boolean hasLink(String link) {
-        return links.contains(link);
-    }
+    /**
+     * Removes a tag from the note
+     * @param tag tag to remove
+     */
+    void removeTag(String tag);
 
-    public Iterator<String> getLinks() {
-        return links.iterator();
-    }
+    /**
+     * Gets the number of tags of this note
+     * @return number of tags
+     */
+    int getNumberOfTags();
 
-    public int getNumberOfLinks() {
-        return links.size();
-    }
+    /**
+     * Gets an iterator for traversing tags of this note
+     * @return tags iterator
+     */
+    Iterator<String> getTagsIterator();
 
-    public void addTag(String tag) {
-        tags.add(tag);
-    }
+    /**
+     * Gets the last update date
+     * @return last update date
+     */
+    LocalDate getLastUpdateDate();
 
-    public void removeTag(String tag) {
-        tags.remove(tag);
-    }
+    /**
+     * Updates the date and ID
+     * @param date new update date
+     * @param ID new update ID
+     */
+    void updateDate(LocalDate date, int ID);
 
-    public int getNumberOfTags() {
-        return tags.size();
-    }
-
-    public Iterator<String> getTagsIterator () {
-        return tags.iterator();
-    }
-
-    public LocalDate getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void updateDate(LocalDate date, int ID) {
-        this.lastUpdateDate = date;
-        this.lastUpdateID = ID;
-    }
-
-    public int getLastUpdateID(){
-        return lastUpdateID;
-    }
+    /**
+     * Gets the last update ID
+     * @return last update ID
+     */
+    int getLastUpdateID();
 }
