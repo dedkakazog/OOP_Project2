@@ -1,16 +1,14 @@
 package model;
 import enums.NoteType;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.TreeSet;
+import java.util.*;
 
 public abstract class ContentNoteClass extends NoteClass implements ContentNote{
 
     private String content;
 
-    private ArrayList<String> links;
-    private TreeSet<String> tags;
+    private List<String> links;
+    private SortedSet<String> tags;
 
     private LocalDate lastUpdateDate;
     private int lastUpdateID;

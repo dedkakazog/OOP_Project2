@@ -15,14 +15,15 @@ public class SecondBrainControllerClass implements SecondBrainController{
 
     private static final String LINK_START = "[[";
     private static final String LINK_END = "]]";
+    private static final String DOT_SIGN = ".";
     
     private static final String NOTE_DETAILS = "%s: %s %d links. %d tags.";
     
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd");
 
-    private HashMap<String, Note> notes;
+    private Map<String, Note> notes;
 
-    private TreeMap<Integer, LinkedList<String>> sortedTags;
+    private SortedMap<Integer, LinkedList<String>> sortedTags;
 
     private LocalDate currentDate;
     private int updateId;
@@ -79,7 +80,7 @@ public class SecondBrainControllerClass implements SecondBrainController{
         if (!subNoteNames.isEmpty()) {
             for (String subNoteName : subNoteNames) {
                 if (!notes.containsKey(subNoteName)) {
-                    String subNoteContent = subNoteName + ".";
+                    String subNoteContent = subNoteName + DOT_SIGN;
                     addPermNote(NoteType.PERMANENT, date, subNoteName, subNoteContent);
                 }
             }
